@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reporte Workshop – Innovación Digital 2025</title>
+
+  <style>
+    /* ── Base ─────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary:   #4f46e5;
+      --secondary: #7c3aed;
+      --accent:    #06b6d4;
+      --success:   #10b981;
+      --warning:   #f59e0b;
+      --danger:    #ef4444;
+      --bg:        #0f172a;
+      --surface:   #1e293b;
+      --card:      #273548;
+      --border:    #334155;
+      --text:      #e2e8f0;
+      --muted:     #94a3b8;
+      --radius:    14px;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 32px 16px;
+    }
+
+    /* ── Layout ───────────────────────────────────────────────── */
+    .container { max-width: 1200px; margin: 0 auto; }
+
+    /* ── Header ───────────────────────────────────────────────── */
+    .header {
+      text-align: center;
+      padding: 56px 24px 40px;
+      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e293b 100%);
+      border-radius: var(--radius);
+      margin-bottom: 32px;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 60% 0%, rgba(99,102,241,.35) 0%, transparent 70%);
+    }
+    .badge {
+      display: inline-block;
+      background: rgba(99,102,241,.25);
+      border: 1px solid rgba(99,102,241,.5);
+      color: #a5b4fc;
+      padding: 4px 16px;
+      border-radius: 999px;
+      font-size: .75rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .header h1 {
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 800;
+      background: linear-gradient(90deg, #a5b4fc, #67e8f9);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+    }
+    .header p {
+      color: var(--muted);
+      font-size: 1rem;
+      max-width: 560px;
+      margin: 0 auto 24px;
+    }
+    .header-meta {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      font-size: .85rem;
+      color: var(--muted);
+    }
+    .header-meta span { display: flex; align-items: center; gap: 6px; }
+
+    /* ── KPI Cards ────────────────────────────────────────────── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 18px;
+      margin-bottom: 32px;
+    }
+    .kpi-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      transition: transform .2s;
+    }
+    .kpi-card:hover { transform: translateY(-3px); }
+    .kpi-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      border-radius: var(--radius) var(--radius) 0 0;
+    }
+    .kpi-card.blue::after   { background: var(--primary); }
+    .kpi-card.purple::after { background: var(--secondary); }
+    .kpi-card.cyan::after   { background: var(--accent); }
+    .kpi-card.green::after  { background: var(--success); }
+    .kpi-card.amber::after  { background: var(--warning); }
+    .kpi-card.red::after    { background: var(--danger); }
+
+    .kpi-icon {
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem;
+      margin-bottom: 16px;
+    }
+    .blue   .kpi-icon { background: rgba(79,70,229,.2);  color: #818cf8; }
+    .purple .kpi-icon { background: rgba(124,58,237,.2); color: #a78bfa; }
+    .cyan   .kpi-icon { background: rgba(6,182,212,.2);  color: #22d3ee; }
+    .green  .kpi-icon { background: rgba(16,185,129,.2); color: #34d399; }
+    .amber  .kpi-icon { background: rgba(245,158,11,.2); color: #fbbf24; }
+    .red    .kpi-icon { background: rgba(239,68,68,.2);  color: #f87171; }
+
+    .kpi-value {
+      font-size: 2.2rem;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .kpi-label { font-size: .82rem; color: var(--muted); }
+    .kpi-trend {
+      display: inline-flex; align-items: center; gap: 3px;
+      font-size: .75rem; margin-top: 10px; padding: 2px 8px;
+      border-radius: 999px;
+    }
+    .trend-up   { background: rgba(16,185,129,.15); color: #34d399; }
+    .trend-down { background: rgba(239,68,68,.15);  color: #f87171; }
+
+    /* ── Grid 2-col ───────────────────────────────────────────── */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    /* ── Section card ─────────────────────────────────────────── */
+    .section-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+    }
+    .section-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 20px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .section-title .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+    }
+    .chart-wrap { position: relative; height: 260px; }
+
+    /* ── Progress bars ────────────────────────────────────────── */
+    .prog-list { display: flex; flex-direction: column; gap: 16px; }
+    .prog-item {}
+    .prog-header {
+      display: flex; justify-content: space-between;
+      font-size: .85rem; margin-bottom: 6px;
+      color: var(--text);
+    }
+    .prog-bar-bg {
+      height: 8px; background: var(--border);
+      border-radius: 999px; overflow: hidden;
+    }
+    .prog-bar-fill {
+      height: 100%; border-radius: 999px;
+      transition: width 1s ease;
+    }
+
+    /* ── Table ────────────────────────────────────────────────── */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+    thead th {
+      text-align: left;
+      padding: 10px 14px;
+      background: var(--surface);
+      color: var(--muted);
+      font-weight: 600;
+      font-size: .78rem;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+    thead th:first-child { border-radius: 8px 0 0 8px; }
+    thead th:last-child  { border-radius: 0 8px 8px 0; }
+    tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(255,255,255,.03); }
+    tbody td { padding: 12px 14px; color: var(--text); }
+
+    .pill {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: .75rem;
+      font-weight: 600;
+    }
+    .pill-blue   { background: rgba(79,70,229,.2);  color: #818cf8; }
+    .pill-purple { background: rgba(124,58,237,.2); color: #a78bfa; }
+    .pill-cyan   { background: rgba(6,182,212,.2);  color: #22d3ee; }
+    .pill-green  { background: rgba(16,185,129,.2); color: #34d399; }
+    .pill-amber  { background: rgba(245,158,11,.2); color: #fbbf24; }
+    .pill-red    { background: rgba(239,68,68,.2);  color: #f87171; }
+
+    /* ── Timeline ─────────────────────────────────────────────── */
+    .timeline { position: relative; padding-left: 24px; }
+    .timeline::before {
+      content: '';
+      position: absolute; left: 7px; top: 6px; bottom: 6px; width: 2px;
+      background: var(--border);
+    }
+    .tl-item {
+      position: relative;
+      margin-bottom: 22px;
+    }
+    .tl-item:last-child { margin-bottom: 0; }
+    .tl-dot {
+      position: absolute;
+      left: -21px; top: 4px;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      border: 2px solid var(--bg);
+    }
+    .tl-time  { font-size: .75rem; color: var(--muted); margin-bottom: 2px; }
+    .tl-title { font-size: .9rem;  font-weight: 700; margin-bottom: 2px; }
+    .tl-sub   { font-size: .8rem;  color: var(--muted); }
+
+    /* ── Ratings ──────────────────────────────────────────────── */
+    .rating-grid { display: flex; flex-direction: column; gap: 14px; }
+    .rating-row { display: flex; align-items: center; gap: 12px; font-size: .85rem; }
+    .rating-label { width: 140px; flex-shrink: 0; color: var(--muted); }
+    .stars { color: #fbbf24; letter-spacing: 2px; font-size: 1rem; }
+    .rating-score { margin-left: auto; font-weight: 700; }
+
+    /* ── Footer ───────────────────────────────────────────────── */
+    .footer {
+      text-align: center;
+      padding: 32px;
+      color: var(--muted);
+      font-size: .8rem;
+    }
+    .footer strong { color: var(--text); }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ── HEADER ─────────────────────────────────────────────── -->
+  <header class="header">
+    <div class="badge">Reporte Oficial · Datos Ficticios · Demo</div>
+    <h1>🚀 Workshop de Innovación Digital 2025</h1>
+    <p>Resumen ejecutivo de participación, sesiones y retroalimentación del evento</p>
+    <div class="header-meta">
+      <span>📅 15–17 de Marzo, 2025</span>
+      <span>📍 Centro de Convenciones Tecnológicas, CDMX</span>
+      <span>👤 Generado el 3 de Marzo, 2025</span>
+    </div>
+  </header>
+
+  <!-- ── KPI CARDS ──────────────────────────────────────────── -->
+  <div class="kpi-grid">
+    <div class="kpi-card blue">
+      <div class="kpi-icon">👥</div>
+      <div class="kpi-value">1 248</div>
+      <div class="kpi-label">Total de Participantes</div>
+      <span class="kpi-trend trend-up">▲ 18% vs 2024</span>
+    </div>
+    <div class="kpi-card purple">
+      <div class="kpi-icon">🗓️</div>
+      <div class="kpi-value">24</div>
+      <div class="kpi-label">Sesiones Impartidas</div>
+      <span class="kpi-trend trend-up">▲ 4 nuevas</span>
+    </div>
+    <div class="kpi-card cyan">
+      <div class="kpi-icon">🎤</div>
+      <div class="kpi-value">36</div>
+      <div class="kpi-label">Ponentes / Facilitadores</div>
+      <span class="kpi-trend trend-up">▲ 12% vs 2024</span>
+    </div>
+    <div class="kpi-card green">
+      <div class="kpi-icon">✅</div>
+      <div class="kpi-value">94.3%</div>
+      <div class="kpi-label">Tasa de Asistencia</div>
+      <span class="kpi-trend trend-up">▲ 2.1 pts</span>
+    </div>
+    <div class="kpi-card amber">
+      <div class="kpi-icon">⭐</div>
+      <div class="kpi-value">4.7</div>
+      <div class="kpi-label">Satisfacción General</div>
+      <span class="kpi-trend trend-up">▲ 0.3 pts</span>
+    </div>
+    <div class="kpi-card red">
+      <div class="kpi-icon">🏆</div>
+      <div class="kpi-value">312</div>
+      <div class="kpi-label">Certificados Emitidos</div>
+      <span class="kpi-trend trend-down">▽ Cupo lleno</span>
+    </div>
+  </div>
+
+  <!-- ── ROW 1: Doughnut + Barras por día ───────────────────── -->
+  <div class="grid-2">
+
+    <div class="section-card">
+      <div class="section-title">
+        <span class="dot" style="background:#818cf8;"></span>
+        Participantes por Categoría
+      </div>
+      <div class="chart-wrap">
+        <canvas id="chartCategoria"></canvas>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title">
+        <span class="dot" style="background:#22d3ee;"></span>
+        Asistencia por Día
+      </div>
+      <div class="chart-wrap">
+        <canvas id="chartDias"></canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── ROW 2: Participantes por sesión + por tipo ─────────── -->
+  <div class="grid-2">
+
+    <div class="section-card">
+      <div class="section-title">
+        <span class="dot" style="background:#34d399;"></span>
+        Top 8 Sesiones por Participación
+      </div>
+      <div class="prog-list">
+        <div class="prog-item">
+          <div class="prog-header"><span>IA Generativa Aplicada</span><span>312</span></div>
+          <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:100%;background:linear-gradient(90deg,#4f46e5,#7c3aed);"></div></div>
+        </div>
+        <div class="prog-item">
+          <div class="prog-header"><span>Seguridad en la Nube</span><span>287</span></div>
+          <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:92%;background:linear-gradient(90deg,#7c3aed,#06b6d4);"></div></div>
+        </div>
+        <div class="prog-item">
+          <div class="prog-header"><span>DevOps & GitOps</span><span>264</span></div>
+          <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:85%;background:linear-gradient(90deg,#06b6d4,#10b981);"></div></div>
+        </div>
+        <div class="prog-item">
+          <div class="prog-header"><span>UX Research con Datos</span><span>241</span></div>
+          <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:77%;background:linear-gradient(90deg,#10b981,#84cc16);"></div></div>
+        </div>
+        <div class="prog-item">
+          <div class="prog-header"><span>Arquitectura de Microservicios</span><span>218</span></div>
+          <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:70%;background:linear-gradient(90deg,#f59e0b,#ef4444);"></div></div>
+        </div>
+        <div class="prog-item">
+          <div class="prog-header"><span>Transformación Ágil</span><span>196</span></div>
+          <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:63%;background:linear-gradient(90deg,#ef4444,#ec4899);"></div></div>
+        </div>
+        <div class="prog-item">
+          <div class="prog-header"><span>Data Mesh & Lakehouse</span><span>174</span></div>
+          <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:56%;background:linear-gradient(90deg,#8b5cf6,#4f46e5);"></div></div>
+        </div>
+        <div class="prog-item">
+          <div class="prog-header"><span>Kubernetes Avanzado</span><span>159</span></div>
+          <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:51%;background:linear-gradient(90deg,#0ea5e9,#7c3aed);"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title">
+        <span class="dot" style="background:#f87171;"></span>
+        Distribución por Tipo de Perfil
+      </div>
+      <div class="chart-wrap">
+        <canvas id="chartPerfil"></canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── ROW 3: Tabla de sesiones ───────────────────────────── -->
+  <div class="section-card" style="margin-bottom:32px;">
+    <div class="section-title">
+      <span class="dot" style="background:#fbbf24;"></span>
+      Detalle de Sesiones
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Sesión</th>
+            <th>Ponente</th>
+            <th>Modalidad</th>
+            <th>Inscritos</th>
+            <th>Asistentes</th>
+            <th>Asistencia</th>
+            <th>Calificación</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>01</td>
+            <td><strong>IA Generativa Aplicada</strong></td>
+            <td>Dra. Ana Torres</td>
+            <td><span class="pill pill-blue">Presencial</span></td>
+            <td>320</td><td>312</td>
+            <td><span class="pill pill-green">97.5%</span></td>
+            <td>⭐ 4.9</td>
+          </tr>
+          <tr>
+            <td>02</td>
+            <td><strong>Seguridad en la Nube</strong></td>
+            <td>Ing. Carlos Ruiz</td>
+            <td><span class="pill pill-cyan">Híbrido</span></td>
+            <td>300</td><td>287</td>
+            <td><span class="pill pill-green">95.7%</span></td>
+            <td>⭐ 4.8</td>
+          </tr>
+          <tr>
+            <td>03</td>
+            <td><strong>DevOps &amp; GitOps</strong></td>
+            <td>Lic. María García</td>
+            <td><span class="pill pill-blue">Presencial</span></td>
+            <td>280</td><td>264</td>
+            <td><span class="pill pill-green">94.3%</span></td>
+            <td>⭐ 4.7</td>
+          </tr>
+          <tr>
+            <td>04</td>
+            <td><strong>UX Research con Datos</strong></td>
+            <td>Dr. Pablo Mendoza</td>
+            <td><span class="pill pill-purple">Virtual</span></td>
+            <td>260</td><td>241</td>
+            <td><span class="pill pill-amber">92.7%</span></td>
+            <td>⭐ 4.6</td>
+          </tr>
+          <tr>
+            <td>05</td>
+            <td><strong>Arquitectura de Microservicios</strong></td>
+            <td>Ing. Laura Soto</td>
+            <td><span class="pill pill-blue">Presencial</span></td>
+            <td>230</td><td>218</td>
+            <td><span class="pill pill-amber">94.8%</span></td>
+            <td>⭐ 4.7</td>
+          </tr>
+          <tr>
+            <td>06</td>
+            <td><strong>Transformación Ágil</strong></td>
+            <td>Mtro. Jorge Vega</td>
+            <td><span class="pill pill-cyan">Híbrido</span></td>
+            <td>210</td><td>196</td>
+            <td><span class="pill pill-amber">93.3%</span></td>
+            <td>⭐ 4.5</td>
+          </tr>
+          <tr>
+            <td>07</td>
+            <td><strong>Data Mesh &amp; Lakehouse</strong></td>
+            <td>Dra. Valeria López</td>
+            <td><span class="pill pill-purple">Virtual</span></td>
+            <td>185</td><td>174</td>
+            <td><span class="pill pill-amber">94.1%</span></td>
+            <td>⭐ 4.6</td>
+          </tr>
+          <tr>
+            <td>08</td>
+            <td><strong>Kubernetes Avanzado</strong></td>
+            <td>Ing. Sergio Mora</td>
+            <td><span class="pill pill-blue">Presencial</span></td>
+            <td>170</td><td>159</td>
+            <td><span class="pill pill-amber">93.5%</span></td>
+            <td>⭐ 4.7</td>
+          </tr>
+          <tr>
+            <td>09</td>
+            <td><strong>Fintech &amp; Open Banking</strong></td>
+            <td>Lic. Diana Flores</td>
+            <td><span class="pill pill-cyan">Híbrido</span></td>
+            <td>155</td><td>143</td>
+            <td><span class="pill pill-red">92.3%</span></td>
+            <td>⭐ 4.4</td>
+          </tr>
+          <tr>
+            <td>10</td>
+            <td><strong>Green Tech &amp; Sostenibilidad</strong></td>
+            <td>Dr. Andrés Ríos</td>
+            <td><span class="pill pill-purple">Virtual</span></td>
+            <td>140</td><td>130</td>
+            <td><span class="pill pill-red">92.9%</span></td>
+            <td>⭐ 4.5</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── ROW 4: Timeline agenda + Satisfacción ──────────────── -->
+  <div class="grid-2">
+
+    <div class="section-card">
+      <div class="section-title">
+        <span class="dot" style="background:#a78bfa;"></span>
+        Agenda del Evento
+      </div>
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-dot" style="background:#4f46e5;"></div>
+          <div class="tl-time">Día 1 · 15 Mar · 09:00</div>
+          <div class="tl-title">Apertura &amp; Keynote Principal</div>
+          <div class="tl-sub">Auditorio Central · 1 248 asistentes</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot" style="background:#7c3aed;"></div>
+          <div class="tl-time">Día 1 · 15 Mar · 11:00–18:00</div>
+          <div class="tl-title">Talleres Paralelos (Tracks A, B, C)</div>
+          <div class="tl-sub">8 sesiones · 1 034 participantes acumulados</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot" style="background:#06b6d4;"></div>
+          <div class="tl-time">Día 2 · 16 Mar · 09:00–17:00</div>
+          <div class="tl-title">Conferencias &amp; Paneles Expertos</div>
+          <div class="tl-sub">10 sesiones · 956 participantes acumulados</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot" style="background:#10b981;"></div>
+          <div class="tl-time">Día 3 · 17 Mar · 09:00–14:00</div>
+          <div class="tl-title">Hackathon &amp; Demo Day</div>
+          <div class="tl-sub">48 equipos · 192 participantes</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot" style="background:#f59e0b;"></div>
+          <div class="tl-time">Día 3 · 17 Mar · 15:30</div>
+          <div class="tl-title">Ceremonia de Clausura &amp; Entrega de Certificados</div>
+          <div class="tl-sub">312 certificados entregados · 1 084 asistentes</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title">
+        <span class="dot" style="background:#fbbf24;"></span>
+        Índice de Satisfacción por Área
+      </div>
+      <div class="rating-grid">
+        <div class="rating-row">
+          <span class="rating-label">Contenido técnico</span>
+          <div class="prog-bar-bg" style="flex:1">
+            <div class="prog-bar-fill" style="width:96%;background:linear-gradient(90deg,#4f46e5,#7c3aed);height:10px;border-radius:999px;"></div>
+          </div>
+          <span class="stars">★★★★★</span>
+          <span class="rating-score" style="color:#a5b4fc;">4.8</span>
+        </div>
+        <div class="rating-row">
+          <span class="rating-label">Ponentes</span>
+          <div class="prog-bar-bg" style="flex:1">
+            <div class="prog-bar-fill" style="width:94%;background:linear-gradient(90deg,#7c3aed,#06b6d4);height:10px;border-radius:999px;"></div>
+          </div>
+          <span class="stars">★★★★★</span>
+          <span class="rating-score" style="color:#22d3ee;">4.7</span>
+        </div>
+        <div class="rating-row">
+          <span class="rating-label">Organización</span>
+          <div class="prog-bar-bg" style="flex:1">
+            <div class="prog-bar-fill" style="width:90%;background:linear-gradient(90deg,#06b6d4,#10b981);height:10px;border-radius:999px;"></div>
+          </div>
+          <span class="stars">★★★★½</span>
+          <span class="rating-score" style="color:#34d399;">4.5</span>
+        </div>
+        <div class="rating-row">
+          <span class="rating-label">Instalaciones</span>
+          <div class="prog-bar-bg" style="flex:1">
+            <div class="prog-bar-fill" style="width:86%;background:linear-gradient(90deg,#10b981,#84cc16);height:10px;border-radius:999px;"></div>
+          </div>
+          <span class="stars">★★★★½</span>
+          <span class="rating-score" style="color:#84cc16;">4.3</span>
+        </div>
+        <div class="rating-row">
+          <span class="rating-label">Networking</span>
+          <div class="prog-bar-bg" style="flex:1">
+            <div class="prog-bar-fill" style="width:92%;background:linear-gradient(90deg,#f59e0b,#ef4444);height:10px;border-radius:999px;"></div>
+          </div>
+          <span class="stars">★★★★★</span>
+          <span class="rating-score" style="color:#fbbf24;">4.6</span>
+        </div>
+        <div class="rating-row">
+          <span class="rating-label">Material &amp; Recursos</span>
+          <div class="prog-bar-bg" style="flex:1">
+            <div class="prog-bar-fill" style="width:88%;background:linear-gradient(90deg,#ec4899,#8b5cf6);height:10px;border-radius:999px;"></div>
+          </div>
+          <span class="stars">★★★★½</span>
+          <span class="rating-score" style="color:#f472b6;">4.4</span>
+        </div>
+        <div class="rating-row">
+          <span class="rating-label">Plataforma Virtual</span>
+          <div class="prog-bar-bg" style="flex:1">
+            <div class="prog-bar-fill" style="width:80%;background:linear-gradient(90deg,#8b5cf6,#4f46e5);height:10px;border-radius:999px;"></div>
+          </div>
+          <span class="stars">★★★★</span>
+          <span class="rating-score" style="color:#a78bfa;">4.0</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── FOOTER ──────────────────────────────────────────────── -->
+  <footer class="footer">
+    <p>⚠️ <strong>Nota:</strong> Todos los datos presentados en este reporte son <strong>completamente ficticios</strong> y han sido generados únicamente con fines de <strong>demostración</strong>.</p>
+    <p style="margin-top:8px;">© 2025 Innovación Digital Workshop · Reporte generado automáticamente</p>
+  </footer>
+
+</div><!-- /container -->
+
+<!-- ── CHARTS (vanilla Canvas API – no external dependencies) ──── -->
+<script>
+  /* ── helpers ───────────────────────────────────────────────── */
+  function resizeCanvas(canvas) {
+    const wrap = canvas.parentElement;
+    canvas.width  = wrap.clientWidth  || 400;
+    canvas.height = wrap.clientHeight || 260;
+  }
+
+  function hexToRgba(hex, alpha) {
+    const r = parseInt(hex.slice(1,3),16),
+          g = parseInt(hex.slice(3,5),16),
+          b = parseInt(hex.slice(5,7),16);
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+
+  /* ── Donut chart ───────────────────────────────────────────── */
+  function drawDonut(id, data, labels, colors) {
+    const canvas = document.getElementById(id);
+    resizeCanvas(canvas);
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const legendW = 160;
+    const drawW = W - legendW;
+    const cx = drawW / 2, cy = H / 2;
+    const rOuter = Math.min(cx, cy) * 0.82;
+    const rInner = rOuter * 0.58;
+
+    const total = data.reduce((a,b) => a+b, 0);
+    let angle = -Math.PI / 2;
+
+    data.forEach((val, i) => {
+      const sweep = (val / total) * 2 * Math.PI;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, rOuter, angle, angle + sweep);
+      ctx.closePath();
+      ctx.fillStyle = colors[i];
+      ctx.fill();
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      angle += sweep;
+    });
+
+    /* inner hole */
+    ctx.beginPath();
+    ctx.arc(cx, cy, rInner, 0, Math.PI*2);
+    ctx.fillStyle = '#273548';
+    ctx.fill();
+
+    /* centre text */
+    ctx.fillStyle = '#e2e8f0';
+    ctx.textAlign = 'center';
+    ctx.font = `bold ${Math.round(rInner*0.5)}px Segoe UI,sans-serif`;
+    ctx.fillText(total.toLocaleString(), cx, cy + 6);
+    ctx.font = `${Math.round(rInner*0.22)}px Segoe UI,sans-serif`;
+    ctx.fillStyle = '#94a3b8';
+    ctx.fillText('participantes', cx, cy + rInner*0.35);
+
+    /* legend on the right */
+    const lx = drawW + 12;
+    const lineH = Math.min(22, (H - 20) / labels.length);
+    const startY = (H - lineH * labels.length) / 2 + lineH * 0.5;
+    labels.forEach((lbl, i) => {
+      const y = startY + i * lineH;
+      ctx.fillStyle = colors[i];
+      ctx.beginPath();
+      ctx.roundRect(lx, y - 6, 12, 12, 3);
+      ctx.fill();
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '11px Segoe UI,sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(`${lbl} (${data[i]})`, lx + 16, y + 4);
+    });
+  }
+
+  /* ── Grouped bar chart ─────────────────────────────────────── */
+  function drawBars(id, groups, datasets, dsLabels, dsColors) {
+    const canvas = document.getElementById(id);
+    resizeCanvas(canvas);
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const pad = { top: 36, right: 20, bottom: 46, left: 50 };
+    const chartW = W - pad.left - pad.right;
+    const chartH = H - pad.top  - pad.bottom;
+
+    const allVals = datasets.flatMap(d => d);
+    const maxVal  = Math.ceil(Math.max(...allVals) / 100) * 100;
+    const steps   = 4;
+
+    /* grid + y-axis labels */
+    ctx.strokeStyle = 'rgba(255,255,255,.06)';
+    ctx.lineWidth = 1;
+    ctx.fillStyle = '#64748b';
+    ctx.font = '11px Segoe UI,sans-serif';
+    ctx.textAlign = 'right';
+    for (let s = 0; s <= steps; s++) {
+      const v = (maxVal / steps) * s;
+      const y = pad.top + chartH - (v / maxVal) * chartH;
+      ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + chartW, y); ctx.stroke();
+      ctx.fillText(v.toFixed(0), pad.left - 6, y + 4);
+    }
+
+    /* bars */
+    const nGroups = groups.length;
+    const nDS     = datasets.length;
+    const groupW  = chartW / nGroups;
+    const barW    = (groupW * 0.65) / nDS;
+    const gap     = (groupW * 0.35) / (nDS + 1);
+
+    datasets.forEach((vals, di) => {
+      vals.forEach((val, gi) => {
+        const barH = (val / maxVal) * chartH;
+        const x = pad.left + gi * groupW + gap * (di + 1) + barW * di;
+        const y = pad.top + chartH - barH;
+
+        /* gradient fill */
+        const grad = ctx.createLinearGradient(0, y, 0, y + barH);
+        grad.addColorStop(0, dsColors[di]);
+        grad.addColorStop(1, hexToRgba(dsColors[di], 0.45));
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.roundRect(x, y, barW, barH, [4,4,0,0]);
+        ctx.fill();
+      });
+    });
+
+    /* x-axis labels */
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '11px Segoe UI,sans-serif';
+    ctx.textAlign = 'center';
+    groups.forEach((lbl, gi) => {
+      const x = pad.left + gi * groupW + groupW / 2;
+      ctx.fillText(lbl, x, H - pad.bottom + 18);
+    });
+
+    /* legend top */
+    let lx = pad.left;
+    dsLabels.forEach((lbl, i) => {
+      ctx.fillStyle = dsColors[i];
+      ctx.beginPath();
+      ctx.roundRect(lx, 8, 12, 12, 3);
+      ctx.fill();
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '11px Segoe UI,sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(lbl, lx + 16, 19);
+      lx += ctx.measureText(lbl).width + 36;
+    });
+  }
+
+  /* ── Polar area chart ──────────────────────────────────────── */
+  function drawPolar(id, data, labels, colors) {
+    const canvas = document.getElementById(id);
+    resizeCanvas(canvas);
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const legendW = 170;
+    const drawW = W - legendW;
+    const cx = drawW / 2, cy = H / 2;
+    const maxR = Math.min(cx, cy) * 0.88;
+    const maxVal = Math.max(...data);
+    const n = data.length;
+    const sweep = (2 * Math.PI) / n;
+
+    /* concentric grid rings */
+    [0.25, 0.5, 0.75, 1].forEach(f => {
+      ctx.beginPath();
+      ctx.arc(cx, cy, maxR * f, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(255,255,255,.07)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    });
+
+    /* sectors */
+    data.forEach((val, i) => {
+      const r = (val / maxVal) * maxR;
+      const start = i * sweep - Math.PI / 2;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, r, start, start + sweep);
+      ctx.closePath();
+      ctx.fillStyle = colors[i];
+      ctx.fill();
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    });
+
+    /* legend */
+    const lx = drawW + 10;
+    const lineH = Math.min(24, (H - 20) / labels.length);
+    const startY = (H - lineH * labels.length) / 2 + lineH * 0.5;
+    labels.forEach((lbl, i) => {
+      const y = startY + i * lineH;
+      ctx.fillStyle = colors[i];
+      ctx.beginPath();
+      ctx.roundRect(lx, y - 6, 12, 12, 3);
+      ctx.fill();
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '11px Segoe UI,sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(`${lbl} (${data[i]})`, lx + 16, y + 4);
+    });
+  }
+
+  /* ── Render all charts after layout is painted ─────────────── */
+  window.addEventListener('load', () => {
+    const C = ['#818cf8','#22d3ee','#34d399','#fbbf24','#f87171','#a78bfa'];
+
+    drawDonut('chartCategoria',
+      [420, 180, 210, 195, 143, 100],
+      ['Desarrolladores','Diseñadores UX','Líderes de Proyecto','Data Scientists','Seguridad','Otros'],
+      C
+    );
+
+    drawBars('chartDias',
+      ['15 Mar','16 Mar','17 Mar'],
+      [[742, 608, 521],[310, 278, 241]],
+      ['Presencial','Virtual'],
+      ['#4f46e5','#06b6d4']
+    );
+
+    drawPolar('chartPerfil',
+      [198, 312, 287, 204, 97, 150],
+      ['Junior 0–2 años','Mid 3–5 años','Senior 6–10 años','Lead / Arquitecto','C-Level / Director','Estudiante'],
+      ['rgba(129,140,248,.75)','rgba(167,139,250,.75)','rgba(34,211,238,.75)',
+       'rgba(52,211,153,.75)','rgba(251,191,36,.75)','rgba(244,114,182,.75)']
+    );
+  });
+</script>
+</body>
+</html>
