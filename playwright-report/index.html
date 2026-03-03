@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Playwright Test Report</title>
+  <style>
+    /* ── Reset & Base ─────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green:   #22c55e;
+      --red:     #ef4444;
+      --orange:  #f97316;
+      --yellow:  #eab308;
+      --blue:    #3b82f6;
+      --purple:  #a855f7;
+      --bg:      #0f172a;
+      --surface: #1e293b;
+      --border:  #334155;
+      --text:    #e2e8f0;
+      --muted:   #94a3b8;
+      --radius:  12px;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* ── Header ───────────────────────────────────────────────────── */
+    .header {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 24px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+    .header-left { display: flex; align-items: center; gap: 14px; }
+    .pw-logo {
+      width: 42px; height: 42px;
+      background: linear-gradient(135deg, #2d9f6e, #1a6b4a);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 4px 14px rgba(45,159,110,.45);
+    }
+    .header h1 { font-size: 1.4rem; font-weight: 700; color: #f1f5f9; }
+    .header h1 span { color: var(--green); }
+    .header-meta { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+    .badge-run {
+      background: #0f172a;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .badge-run b { color: var(--text); }
+
+    /* ── Layout ───────────────────────────────────────────────────── */
+    .container { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
+
+    /* ── Summary Cards ────────────────────────────────────────────── */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+      position: relative;
+      overflow: hidden;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .card:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(0,0,0,.4); }
+    .card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    }
+    .card.passed::before  { background: var(--green); }
+    .card.failed::before  { background: var(--red); }
+    .card.flaky::before   { background: var(--orange); }
+    .card.skipped::before { background: var(--muted); }
+    .card.duration::before { background: var(--blue); }
+    .card.total::before   { background: var(--purple); }
+    .card-label { font-size: 0.74rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 6px; }
+    .card-value { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+    .card.passed  .card-value { color: var(--green); }
+    .card.failed  .card-value { color: var(--red); }
+    .card.flaky   .card-value { color: var(--orange); }
+    .card.skipped .card-value { color: var(--muted); }
+    .card.duration .card-value { color: var(--blue); }
+    .card.total   .card-value { color: var(--purple); }
+    .card-sub { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+
+    /* ── Progress Bar ─────────────────────────────────────────────── */
+    .progress-section { margin-bottom: 32px; }
+    .progress-title { font-size: 0.9rem; font-weight: 600; color: var(--muted); margin-bottom: 10px; }
+    .progress-bar-wrap {
+      background: #0f172a;
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      height: 20px;
+      overflow: hidden;
+      display: flex;
+    }
+    .pb-seg { height: 100%; transition: width 1.2s cubic-bezier(.4,0,.2,1); }
+    .pb-passed  { background: var(--green); }
+    .pb-failed  { background: var(--red); }
+    .pb-flaky   { background: var(--orange); }
+    .pb-skipped { background: #475569; }
+    .progress-legend {
+      display: flex; gap: 18px; flex-wrap: wrap; margin-top: 10px;
+    }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--muted); }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+    /* ── Section Title ────────────────────────────────────────────── */
+    .section-title {
+      font-size: 1.05rem; font-weight: 700; color: #f1f5f9;
+      margin-bottom: 16px; padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .section-icon { font-size: 1.1rem; }
+
+    /* ── Performance Panel ────────────────────────────────────────── */
+    .perf-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .perf-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+    }
+    .perf-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .perf-card-title { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; }
+    .perf-badge {
+      font-size: 0.7rem; font-weight: 700; padding: 2px 8px;
+      border-radius: 99px; text-transform: uppercase;
+    }
+    .perf-badge.good   { background: rgba(34,197,94,.15); color: var(--green); border: 1px solid rgba(34,197,94,.3); }
+    .perf-badge.avg    { background: rgba(234,179,8,.15);  color: var(--yellow); border: 1px solid rgba(234,179,8,.3); }
+    .perf-metric { font-size: 1.8rem; font-weight: 800; color: var(--text); }
+    .perf-unit { font-size: 0.8rem; color: var(--muted); margin-left: 4px; }
+    .perf-bar-wrap { background: #0f172a; border-radius: 99px; height: 6px; margin-top: 10px; overflow: hidden; }
+    .perf-bar-fill { height: 100%; border-radius: 99px; transition: width 1.5s cubic-bezier(.4,0,.2,1); }
+    .fill-green  { background: linear-gradient(90deg, #22c55e, #16a34a); }
+    .fill-yellow { background: linear-gradient(90deg, #eab308, #ca8a04); }
+    .fill-blue   { background: linear-gradient(90deg, #3b82f6, #1d4ed8); }
+
+    /* ── Mini Chart (bar chart) ───────────────────────────────────── */
+    .chart-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 32px;
+    }
+    .mini-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      height: 80px;
+    }
+    .bar {
+      flex: 1;
+      border-radius: 4px 4px 0 0;
+      min-height: 4px;
+      transition: height .8s ease;
+      position: relative;
+    }
+    .bar:hover::after {
+      content: attr(data-label);
+      position: absolute;
+      bottom: calc(100% + 4px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0f172a;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 0.7rem;
+      white-space: nowrap;
+      color: var(--text);
+      pointer-events: none;
+      z-index: 10;
+    }
+    .bar-passed { background: linear-gradient(180deg, #22c55e, #16a34a); }
+    .bar-failed { background: linear-gradient(180deg, #ef4444, #dc2626); }
+    .bar-flaky  { background: linear-gradient(180deg, #f97316, #ea580c); }
+    .chart-labels {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .chart-label { flex: 1; text-align: center; font-size: 0.62rem; color: var(--muted); }
+
+    /* ── Failed Tests ─────────────────────────────────────────────── */
+    .test-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 32px; }
+    .test-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .test-item-header {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 18px; cursor: pointer;
+      transition: background .15s;
+    }
+    .test-item-header:hover { background: #273449; }
+    .status-dot {
+      width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+    }
+    .dot-passed  { background: var(--green); box-shadow: 0 0 6px var(--green); }
+    .dot-failed  { background: var(--red);   box-shadow: 0 0 6px var(--red); }
+    .dot-flaky   { background: var(--orange); box-shadow: 0 0 6px var(--orange); }
+    .dot-skipped { background: var(--muted); }
+    .test-name { flex: 1; font-size: 0.88rem; font-weight: 500; }
+    .test-file { font-size: 0.75rem; color: var(--muted); }
+    .test-duration { font-size: 0.78rem; color: var(--muted); white-space: nowrap; }
+    .test-status-badge {
+      font-size: 0.72rem; font-weight: 700; padding: 3px 10px;
+      border-radius: 99px; text-transform: uppercase; flex-shrink: 0;
+    }
+    .badge-passed  { background: rgba(34,197,94,.12); color: var(--green); border: 1px solid rgba(34,197,94,.25); }
+    .badge-failed  { background: rgba(239,68,68,.12);  color: var(--red);   border: 1px solid rgba(239,68,68,.25); }
+    .badge-flaky   { background: rgba(249,115,22,.12); color: var(--orange); border: 1px solid rgba(249,115,22,.25); }
+    .badge-skipped { background: rgba(148,163,184,.1); color: var(--muted);  border: 1px solid rgba(148,163,184,.2); }
+    .test-detail {
+      border-top: 1px solid var(--border);
+      padding: 14px 18px;
+      font-size: 0.82rem;
+      display: none;
+    }
+    .test-detail.open { display: block; }
+    .error-block {
+      background: rgba(239,68,68,.07);
+      border: 1px solid rgba(239,68,68,.2);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.8rem;
+      color: #fca5a5;
+      white-space: pre-wrap;
+      line-height: 1.7;
+    }
+    .retry-info {
+      margin-top: 10px;
+      font-size: 0.78rem;
+      color: var(--orange);
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    /* ── Flaky Tests Section ──────────────────────────────────────── */
+    .flaky-table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 32px;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    thead tr { background: #0f172a; border-bottom: 1px solid var(--border); }
+    th { padding: 10px 16px; text-align: left; font-size: 0.75rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-weight: 600; }
+    td { padding: 12px 16px; font-size: 0.83rem; border-bottom: 1px solid var(--border); }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: #273449; }
+    .stability-bar { display: flex; align-items: center; gap: 8px; }
+    .stab-track { flex: 1; height: 6px; background: #0f172a; border-radius: 99px; overflow: hidden; }
+    .stab-fill { height: 100%; border-radius: 99px; }
+    .stab-pct { font-size: 0.76rem; color: var(--muted); white-space: nowrap; }
+
+    /* ── Suite Breakdown ──────────────────────────────────────────── */
+    .suite-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+      margin-bottom: 32px;
+    }
+    .suite-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+    }
+    .suite-name { font-size: 0.85rem; font-weight: 600; margin-bottom: 10px; color: #f1f5f9; }
+    .suite-stats { display: flex; gap: 12px; }
+    .suite-stat { text-align: center; }
+    .suite-stat-val { font-size: 1.2rem; font-weight: 700; }
+    .suite-stat-lbl { font-size: 0.68rem; text-transform: uppercase; color: var(--muted); margin-top: 1px; }
+    .suite-bar { margin-top: 10px; background: #0f172a; border-radius: 99px; height: 5px; overflow: hidden; }
+    .suite-bar-fill { height: 100%; border-radius: 99px; }
+
+    /* ── All Tests ────────────────────────────────────────────────── */
+    .filter-bar {
+      display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;
+    }
+    .filter-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .filter-btn:hover, .filter-btn.active { border-color: var(--blue); color: var(--blue); background: rgba(59,130,246,.08); }
+
+    /* ── Footer ───────────────────────────────────────────────────── */
+    .footer {
+      border-top: 1px solid var(--border);
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 0.76rem;
+      color: var(--muted);
+    }
+    .footer a { color: var(--blue); text-decoration: none; }
+
+    /* ── Animations ───────────────────────────────────────────────── */
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-in { animation: fadeIn .5s ease forwards; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .5; } }
+    .pulse { animation: pulse 2s infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Responsive ───────────────────────────────────────────────── */
+    @media (max-width: 600px) {
+      .header { padding: 16px 20px; }
+      .container { padding: 20px 16px; }
+      .footer { padding: 16px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════ HEADER ══════════════════ -->
+<header class="header">
+  <div class="header-left">
+    <div class="pw-logo">🎭</div>
+    <div>
+      <h1>Playwright <span>Test Report</span></h1>
+      <div class="header-meta">pixails/TestingPrup · branch: <b>main</b> · commit <b>a3f8c12</b></div>
+    </div>
+  </div>
+  <div class="badge-run">
+    🕐 Run at <b>2026-03-03 02:41:08 UTC</b> &nbsp;|&nbsp; CI: <b>GitHub Actions</b> &nbsp;|&nbsp; Node <b>20.x</b>
+  </div>
+</header>
+
+<!-- ══════════════════ MAIN ══════════════════ -->
+<main class="container">
+
+  <!-- ── Summary Cards ── -->
+  <div class="summary-grid fade-in">
+    <div class="card total">
+      <div class="card-label">Total tests</div>
+      <div class="card-value">82</div>
+      <div class="card-sub">across 7 suites</div>
+    </div>
+    <div class="card passed">
+      <div class="card-label">Passed</div>
+      <div class="card-value">78</div>
+      <div class="card-sub">95.1 % success rate</div>
+    </div>
+    <div class="card failed">
+      <div class="card-label">Failed</div>
+      <div class="card-value">2</div>
+      <div class="card-sub">requires attention</div>
+    </div>
+    <div class="card flaky">
+      <div class="card-label">Flaky</div>
+      <div class="card-value">3</div>
+      <div class="card-sub">passed on retry</div>
+    </div>
+    <div class="card skipped">
+      <div class="card-label">Skipped</div>
+      <div class="card-value">2</div>
+      <div class="card-sub">marked @skip</div>
+    </div>
+    <div class="card duration">
+      <div class="card-label">Duration</div>
+      <div class="card-value">1m 48s</div>
+      <div class="card-sub">6 workers · parallel</div>
+    </div>
+  </div>
+
+  <!-- ── Progress Bar ── -->
+  <div class="progress-section fade-in">
+    <div class="progress-title">Overall pass rate</div>
+    <div class="progress-bar-wrap">
+      <div class="pb-seg pb-passed"  style="width:0%"  data-target="95.1%"  id="pb-passed"></div>
+      <div class="pb-seg pb-flaky"   style="width:0%"  data-target="3.66%" id="pb-flaky"></div>
+      <div class="pb-seg pb-failed"  style="width:0%"  data-target="2.44%" id="pb-failed"></div>
+      <div class="pb-seg pb-skipped" style="width:0%"  data-target="2.44%" id="pb-skipped"></div>
+    </div>
+    <div class="progress-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Passed (78)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div>Flaky (3)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Failed (2)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#475569"></div>Skipped (2)</div>
+    </div>
+  </div>
+
+  <!-- ── Performance Section ── -->
+  <div class="section-title"><span class="section-icon">⚡</span> Performance Metrics</div>
+  <div class="perf-grid fade-in">
+    <div class="perf-card">
+      <div class="perf-card-header">
+        <div class="perf-card-title">Avg Page Load</div>
+        <span class="perf-badge good">GOOD</span>
+      </div>
+      <div>
+        <span class="perf-metric">312</span><span class="perf-unit">ms</span>
+      </div>
+      <div class="perf-bar-wrap">
+        <div class="perf-bar-fill fill-green" style="width:0%" id="pf-load"></div>
+      </div>
+      <div style="margin-top:6px;font-size:.75rem;color:var(--muted)">Target: &lt;500 ms</div>
+    </div>
+
+    <div class="perf-card">
+      <div class="perf-card-header">
+        <div class="perf-card-title">Avg First Contentful Paint</div>
+        <span class="perf-badge good">GOOD</span>
+      </div>
+      <div>
+        <span class="perf-metric">218</span><span class="perf-unit">ms</span>
+      </div>
+      <div class="perf-bar-wrap">
+        <div class="perf-bar-fill fill-green" style="width:0%" id="pf-fcp"></div>
+      </div>
+      <div style="margin-top:6px;font-size:.75rem;color:var(--muted)">Target: &lt;400 ms</div>
+    </div>
+
+    <div class="perf-card">
+      <div class="perf-card-header">
+        <div class="perf-card-title">Avg Time to Interactive</div>
+        <span class="perf-badge good">GOOD</span>
+      </div>
+      <div>
+        <span class="perf-metric">487</span><span class="perf-unit">ms</span>
+      </div>
+      <div class="perf-bar-wrap">
+        <div class="perf-bar-fill fill-green" style="width:0%" id="pf-tti"></div>
+      </div>
+      <div style="margin-top:6px;font-size:.75rem;color:var(--muted)">Target: &lt;800 ms</div>
+    </div>
+
+    <div class="perf-card">
+      <div class="perf-card-header">
+        <div class="perf-card-title">Largest Contentful Paint</div>
+        <span class="perf-badge avg">FAIR</span>
+      </div>
+      <div>
+        <span class="perf-metric">1.42</span><span class="perf-unit">s</span>
+      </div>
+      <div class="perf-bar-wrap">
+        <div class="perf-bar-fill fill-yellow" style="width:0%" id="pf-lcp"></div>
+      </div>
+      <div style="margin-top:6px;font-size:.75rem;color:var(--muted)">Target: &lt;2.5 s</div>
+    </div>
+
+    <div class="perf-card">
+      <div class="perf-card-header">
+        <div class="perf-card-title">Cumulative Layout Shift</div>
+        <span class="perf-badge good">GOOD</span>
+      </div>
+      <div>
+        <span class="perf-metric">0.04</span><span class="perf-unit">CLS</span>
+      </div>
+      <div class="perf-bar-wrap">
+        <div class="perf-bar-fill fill-green" style="width:0%" id="pf-cls"></div>
+      </div>
+      <div style="margin-top:6px;font-size:.75rem;color:var(--muted)">Target: &lt;0.1</div>
+    </div>
+
+    <div class="perf-card">
+      <div class="perf-card-header">
+        <div class="perf-card-title">Total Blocking Time</div>
+        <span class="perf-badge good">GOOD</span>
+      </div>
+      <div>
+        <span class="perf-metric">64</span><span class="perf-unit">ms</span>
+      </div>
+      <div class="perf-bar-wrap">
+        <div class="perf-bar-fill fill-blue" style="width:0%" id="pf-tbt"></div>
+      </div>
+      <div style="margin-top:6px;font-size:.75rem;color:var(--muted)">Target: &lt;200 ms</div>
+    </div>
+  </div>
+
+  <!-- ── Duration Chart ── -->
+  <div class="chart-wrap fade-in">
+    <div class="section-title" style="margin-bottom:16px"><span class="section-icon">📊</span> Test Duration by Suite</div>
+    <div class="mini-chart" id="durationChart"></div>
+    <div class="chart-labels" id="chartLabels"></div>
+  </div>
+
+  <!-- ── Suite Breakdown ── -->
+  <div class="section-title"><span class="section-icon">📁</span> Suite Breakdown</div>
+  <div class="suite-grid fade-in" id="suiteGrid"></div>
+
+  <!-- ── ⚠️ Failed Tests ── -->
+  <div class="section-title"><span class="section-icon">❌</span> Failed Tests (2)</div>
+  <div class="test-list fade-in">
+
+    <!-- Failed #1 -->
+    <div class="test-item">
+      <div class="test-item-header" onclick="toggleDetail('f1')">
+        <div class="status-dot dot-failed"></div>
+        <div style="flex:1">
+          <div class="test-name">should complete checkout with a coupon code</div>
+          <div class="test-file">tests/e2e/checkout.spec.ts › Checkout Flow › apply coupon</div>
+        </div>
+        <span class="test-duration">⏱ 4,821 ms</span>
+        <span class="test-status-badge badge-failed">Failed</span>
+      </div>
+      <div class="test-detail" id="f1">
+        <div class="error-block">Error: Timeout 4000ms exceeded while waiting for selector '#coupon-success-msg'
+
+    at checkout.spec.ts:112:28
+    at async Page.waitForSelector (chromium)
+
+  Expected element to be visible within 4 000 ms
+  → Selector: #coupon-success-msg
+  → URL: https://staging.app/checkout?step=2
+
+  Call log:
+    - waiting for selector '#coupon-success-msg' to be visible
+    - selector resolved to hidden &lt;div id="coupon-success-msg" /&gt;</div>
+        <div class="retry-info">🔁 Attempted 3 retries — all failed &nbsp;|&nbsp; Worker #4 &nbsp;|&nbsp; Chromium 124</div>
+      </div>
+    </div>
+
+    <!-- Failed #2 -->
+    <div class="test-item">
+      <div class="test-item-header" onclick="toggleDetail('f2')">
+        <div class="status-dot dot-failed"></div>
+        <div style="flex:1">
+          <div class="test-name">should display 404 page for invalid product slug</div>
+          <div class="test-file">tests/e2e/navigation.spec.ts › Navigation › error pages</div>
+        </div>
+        <span class="test-duration">⏱ 2,204 ms</span>
+        <span class="test-status-badge badge-failed">Failed</span>
+      </div>
+      <div class="test-detail" id="f2">
+        <div class="error-block">AssertionError: Expected page title to match /404 - Not Found/i
+
+    at navigation.spec.ts:87:5
+    received: "500 - Internal Server Error"
+    expected: /404 - Not Found/i
+
+  → URL: https://staging.app/products/invalid-slug-xyz123
+  → HTTP status: 500
+
+  Hint: The product service may be returning an unhandled exception instead of a 404.</div>
+        <div class="retry-info">🔁 Attempted 3 retries — all failed &nbsp;|&nbsp; Worker #2 &nbsp;|&nbsp; Chromium 124</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── 🔥 Flaky Tests ── -->
+  <div class="section-title"><span class="section-icon">🔥</span> Flaky Tests — Passed on Retry</div>
+  <div class="flaky-table-wrap fade-in">
+    <table>
+      <thead>
+        <tr>
+          <th>Test name</th>
+          <th>Suite</th>
+          <th>Attempts</th>
+          <th>Passed on attempt</th>
+          <th>Avg duration</th>
+          <th>Stability (last 10 runs)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <div style="font-weight:500">should send password-reset email</div>
+            <div style="font-size:.72rem;color:var(--muted)">tests/e2e/auth.spec.ts:54</div>
+          </td>
+          <td><span class="test-status-badge badge-flaky">Authentication</span></td>
+          <td style="text-align:center">3</td>
+          <td style="text-align:center;color:var(--orange)">2nd</td>
+          <td>1 840 ms</td>
+          <td>
+            <div class="stability-bar">
+              <div class="stab-track"><div class="stab-fill fill-yellow" style="width:70%"></div></div>
+              <span class="stab-pct">70 %</span>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div style="font-weight:500">should load dashboard within performance budget</div>
+            <div style="font-size:.72rem;color:var(--muted)">tests/e2e/dashboard.spec.ts:22</div>
+          </td>
+          <td><span class="test-status-badge badge-flaky">Dashboard</span></td>
+          <td style="text-align:center">2</td>
+          <td style="text-align:center;color:var(--orange)">2nd</td>
+          <td>3 120 ms</td>
+          <td>
+            <div class="stability-bar">
+              <div class="stab-track"><div class="stab-fill fill-yellow" style="width:80%"></div></div>
+              <span class="stab-pct">80 %</span>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div style="font-weight:500">should persist cart items after page refresh</div>
+            <div style="font-size:.72rem;color:var(--muted)">tests/e2e/cart.spec.ts:138</div>
+          </td>
+          <td><span class="test-status-badge badge-flaky">Shopping Cart</span></td>
+          <td style="text-align:center">3</td>
+          <td style="text-align:center;color:var(--orange)">3rd</td>
+          <td>2 670 ms</td>
+          <td>
+            <div class="stability-bar">
+              <div class="stab-track"><div class="stab-fill fill-yellow" style="width:60%"></div></div>
+              <span class="stab-pct">60 %</span>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── All Tests ── -->
+  <div class="section-title"><span class="section-icon">🧪</span> All Tests</div>
+  <div class="filter-bar">
+    <button class="filter-btn active" onclick="filterTests('all',this)">All (82)</button>
+    <button class="filter-btn" onclick="filterTests('passed',this)">✅ Passed (78)</button>
+    <button class="filter-btn" onclick="filterTests('failed',this)">❌ Failed (2)</button>
+    <button class="filter-btn" onclick="filterTests('flaky',this)">🔥 Flaky (3)</button>
+    <button class="filter-btn" onclick="filterTests('skipped',this)">⏭ Skipped (2)</button>
+  </div>
+  <div class="test-list fade-in" id="allTestsList"></div>
+
+</main>
+
+<!-- ══════════════════ FOOTER ══════════════════ -->
+<footer class="footer">
+  <span>Generated by <a href="https://playwright.dev" target="_blank">Playwright</a> v1.44.0</span>
+  <span>pixails/TestingPrup · <a href="#" target="_blank">View CI run</a></span>
+  <span>2026-03-03T02:41:08Z</span>
+</footer>
+
+<script>
+/* ── Data ─────────────────────────────────────────────────── */
+const suites = [
+  { name:"Authentication",  total:12, passed:11, failed:0, flaky:1, skipped:0, duration:"14s" },
+  { name:"Dashboard",       total:10, passed:8,  failed:0, flaky:1, skipped:1, duration:"22s" },
+  { name:"Shopping Cart",   total:14, passed:12, failed:0, flaky:1, skipped:1, duration:"18s" },
+  { name:"Checkout Flow",   total:10, passed:8,  failed:1, flaky:0, skipped:1, duration:"21s" },
+  { name:"Navigation",      total:16, passed:15, failed:1, flaky:0, skipped:0, duration:"12s" },
+  { name:"User Profile",    total:12, passed:12, failed:0, flaky:0, skipped:0, duration:"9s"  },
+  { name:"Search & Filter", total: 8, passed: 8, failed:0, flaky:0, skipped:0, duration:"8s"  },
+];
+
+const durations = [14, 22, 18, 21, 12, 9, 8];
+
+const allTests = [
+  // Auth (12)
+  { name:"should register new user",                            suite:"Authentication", file:"auth.spec.ts:10",   status:"passed",  dur:"820 ms" },
+  { name:"should login with valid credentials",                 suite:"Authentication", file:"auth.spec.ts:24",   status:"passed",  dur:"640 ms" },
+  { name:"should reject invalid password",                      suite:"Authentication", file:"auth.spec.ts:38",   status:"passed",  dur:"510 ms" },
+  { name:"should send password-reset email",                    suite:"Authentication", file:"auth.spec.ts:54",   status:"flaky",   dur:"1840 ms" },
+  { name:"should block brute-force login",                      suite:"Authentication", file:"auth.spec.ts:70",   status:"passed",  dur:"1200 ms" },
+  { name:"should logout and clear session",                     suite:"Authentication", file:"auth.spec.ts:85",   status:"passed",  dur:"430 ms" },
+  { name:"should enforce 2FA on admin login",                   suite:"Authentication", file:"auth.spec.ts:98",   status:"passed",  dur:"950 ms" },
+  { name:"should display login error message",                  suite:"Authentication", file:"auth.spec.ts:114",  status:"passed",  dur:"390 ms" },
+  { name:"should persist session across tabs",                  suite:"Authentication", file:"auth.spec.ts:130",  status:"passed",  dur:"770 ms" },
+  { name:"should expire session after timeout",                 suite:"Authentication", file:"auth.spec.ts:146",  status:"passed",  dur:"1050 ms" },
+  { name:"should refresh token silently",                       suite:"Authentication", file:"auth.spec.ts:162",  status:"passed",  dur:"680 ms" },
+  { name:"should revoke OAuth token on logout",                 suite:"Authentication", file:"auth.spec.ts:178",  status:"passed",  dur:"590 ms" },
+  // Dashboard (10)
+  { name:"should load dashboard within performance budget",     suite:"Dashboard",      file:"dashboard.spec.ts:22", status:"flaky",  dur:"3120 ms" },
+  { name:"should display user greeting",                        suite:"Dashboard",      file:"dashboard.spec.ts:38", status:"passed", dur:"340 ms" },
+  { name:"should render KPI widgets",                           suite:"Dashboard",      file:"dashboard.spec.ts:52", status:"passed", dur:"620 ms" },
+  { name:"should refresh data on click",                        suite:"Dashboard",      file:"dashboard.spec.ts:68", status:"passed", dur:"810 ms" },
+  { name:"should navigate to orders",                           suite:"Dashboard",      file:"dashboard.spec.ts:84", status:"passed", dur:"470 ms" },
+  { name:"should show empty state if no orders",                suite:"Dashboard",      file:"dashboard.spec.ts:96", status:"passed", dur:"290 ms" },
+  { name:"should toggle dark mode",                             suite:"Dashboard",      file:"dashboard.spec.ts:108", status:"passed", dur:"380 ms" },
+  { name:"should export report as CSV",                         suite:"Dashboard",      file:"dashboard.spec.ts:122", status:"passed", dur:"1100 ms" },
+  { name:"should display notifications badge",                  suite:"Dashboard",      file:"dashboard.spec.ts:138", status:"passed", dur:"350 ms" },
+  { name:"should lazy-load analytics chart",                    suite:"Dashboard",      file:"dashboard.spec.ts:152", status:"skipped", dur:"—" },
+  // Cart (14)
+  { name:"should add item to cart",                             suite:"Shopping Cart",  file:"cart.spec.ts:10",  status:"passed",  dur:"560 ms" },
+  { name:"should remove item from cart",                        suite:"Shopping Cart",  file:"cart.spec.ts:26",  status:"passed",  dur:"480 ms" },
+  { name:"should update item quantity",                         suite:"Shopping Cart",  file:"cart.spec.ts:42",  status:"passed",  dur:"520 ms" },
+  { name:"should show subtotal correctly",                      suite:"Shopping Cart",  file:"cart.spec.ts:58",  status:"passed",  dur:"310 ms" },
+  { name:"should apply percentage discount",                    suite:"Shopping Cart",  file:"cart.spec.ts:74",  status:"passed",  dur:"670 ms" },
+  { name:"should persist cart items after page refresh",        suite:"Shopping Cart",  file:"cart.spec.ts:138", status:"flaky",   dur:"2670 ms" },
+  { name:"should prevent duplicate items",                      suite:"Shopping Cart",  file:"cart.spec.ts:90",  status:"passed",  dur:"410 ms" },
+  { name:"should clear cart",                                   suite:"Shopping Cart",  file:"cart.spec.ts:104", status:"passed",  dur:"330 ms" },
+  { name:"should show out-of-stock badge",                      suite:"Shopping Cart",  file:"cart.spec.ts:120", status:"passed",  dur:"440 ms" },
+  { name:"should calculate tax based on region",                suite:"Shopping Cart",  file:"cart.spec.ts:156", status:"passed",  dur:"590 ms" },
+  { name:"should respect max quantity limit",                   suite:"Shopping Cart",  file:"cart.spec.ts:172", status:"passed",  dur:"380 ms" },
+  { name:"should sync cart across devices",                     suite:"Shopping Cart",  file:"cart.spec.ts:188", status:"passed",  dur:"1230 ms" },
+  { name:"should show estimated delivery date",                 suite:"Shopping Cart",  file:"cart.spec.ts:204", status:"passed",  dur:"490 ms" },
+  { name:"should restore saved cart",                           suite:"Shopping Cart",  file:"cart.spec.ts:220", status:"skipped", dur:"—" },
+  // Checkout (10)
+  { name:"should render checkout steps",                        suite:"Checkout Flow",  file:"checkout.spec.ts:10",  status:"passed",  dur:"540 ms" },
+  { name:"should fill shipping address",                        suite:"Checkout Flow",  file:"checkout.spec.ts:26",  status:"passed",  dur:"870 ms" },
+  { name:"should select payment method",                        suite:"Checkout Flow",  file:"checkout.spec.ts:42",  status:"passed",  dur:"630 ms" },
+  { name:"should complete order with credit card",              suite:"Checkout Flow",  file:"checkout.spec.ts:58",  status:"passed",  dur:"1940 ms" },
+  { name:"should complete checkout with a coupon code",         suite:"Checkout Flow",  file:"checkout.spec.ts:74",  status:"failed",  dur:"4,821 ms" },
+  { name:"should show order confirmation",                      suite:"Checkout Flow",  file:"checkout.spec.ts:128", status:"passed",  dur:"750 ms" },
+  { name:"should validate required fields",                     suite:"Checkout Flow",  file:"checkout.spec.ts:144", status:"passed",  dur:"410 ms" },
+  { name:"should save address for future use",                  suite:"Checkout Flow",  file:"checkout.spec.ts:158", status:"passed",  dur:"620 ms" },
+  { name:"should display order total breakdown",                suite:"Checkout Flow",  file:"checkout.spec.ts:172", status:"passed",  dur:"340 ms" },
+  { name:"should handle PayPal redirect",                       suite:"Checkout Flow",  file:"checkout.spec.ts:186", status:"skipped", dur:"—" },
+  // Navigation (16)
+  { name:"should navigate to home page",                        suite:"Navigation",     file:"navigation.spec.ts:10",  status:"passed",  dur:"280 ms" },
+  { name:"should open product page",                            suite:"Navigation",     file:"navigation.spec.ts:22",  status:"passed",  dur:"310 ms" },
+  { name:"should display 404 page for invalid product slug",    suite:"Navigation",     file:"navigation.spec.ts:34",  status:"failed",  dur:"2,204 ms" },
+  { name:"should navigate back with browser button",            suite:"Navigation",     file:"navigation.spec.ts:48",  status:"passed",  dur:"420 ms" },
+  { name:"should highlight active nav link",                    suite:"Navigation",     file:"navigation.spec.ts:62",  status:"passed",  dur:"290 ms" },
+  { name:"should open mobile hamburger menu",                   suite:"Navigation",     file:"navigation.spec.ts:76",  status:"passed",  dur:"360 ms" },
+  { name:"should navigate via breadcrumb",                      suite:"Navigation",     file:"navigation.spec.ts:90",  status:"passed",  dur:"330 ms" },
+  { name:"should deep-link to category filter",                 suite:"Navigation",     file:"navigation.spec.ts:104", status:"passed",  dur:"450 ms" },
+  { name:"should maintain scroll position on back",             suite:"Navigation",     file:"navigation.spec.ts:118", status:"passed",  dur:"510 ms" },
+  { name:"should open footer links in new tab",                 suite:"Navigation",     file:"navigation.spec.ts:132", status:"passed",  dur:"240 ms" },
+  { name:"should render sitemap",                               suite:"Navigation",     file:"navigation.spec.ts:144", status:"passed",  dur:"380 ms" },
+  { name:"should load category page",                           suite:"Navigation",     file:"navigation.spec.ts:158", status:"passed",  dur:"340 ms" },
+  { name:"should show search suggestions",                      suite:"Navigation",     file:"navigation.spec.ts:170", status:"passed",  dur:"490 ms" },
+  { name:"should close search on Escape key",                   suite:"Navigation",     file:"navigation.spec.ts:184", status:"passed",  dur:"210 ms" },
+  { name:"should render pagination",                            suite:"Navigation",     file:"navigation.spec.ts:198", status:"passed",  dur:"300 ms" },
+  { name:"should deep link to page 2 of results",               suite:"Navigation",     file:"navigation.spec.ts:212", status:"passed",  dur:"370 ms" },
+  // Profile (12)
+  { name:"should display profile info",                         suite:"User Profile",   file:"profile.spec.ts:10",  status:"passed", dur:"370 ms" },
+  { name:"should edit display name",                            suite:"User Profile",   file:"profile.spec.ts:24",  status:"passed", dur:"590 ms" },
+  { name:"should update avatar",                                suite:"User Profile",   file:"profile.spec.ts:38",  status:"passed", dur:"840 ms" },
+  { name:"should change email with confirmation",               suite:"User Profile",   file:"profile.spec.ts:52",  status:"passed", dur:"1100 ms" },
+  { name:"should change password successfully",                 suite:"User Profile",   file:"profile.spec.ts:68",  status:"passed", dur:"720 ms" },
+  { name:"should display order history",                        suite:"User Profile",   file:"profile.spec.ts:84",  status:"passed", dur:"480 ms" },
+  { name:"should paginate order history",                       suite:"User Profile",   file:"profile.spec.ts:98",  status:"passed", dur:"610 ms" },
+  { name:"should cancel pending order",                         suite:"User Profile",   file:"profile.spec.ts:112", status:"passed", dur:"890 ms" },
+  { name:"should download invoice PDF",                         suite:"User Profile",   file:"profile.spec.ts:128", status:"passed", dur:"1340 ms" },
+  { name:"should manage saved addresses",                       suite:"User Profile",   file:"profile.spec.ts:144", status:"passed", dur:"670 ms" },
+  { name:"should delete account with confirmation",             suite:"User Profile",   file:"profile.spec.ts:160", status:"passed", dur:"930 ms" },
+  { name:"should show GDPR data export",                        suite:"User Profile",   file:"profile.spec.ts:176", status:"passed", dur:"1050 ms" },
+  // Search (8)
+  { name:"should return results for keyword",                   suite:"Search & Filter", file:"search.spec.ts:10", status:"passed", dur:"460 ms" },
+  { name:"should filter by category",                           suite:"Search & Filter", file:"search.spec.ts:26", status:"passed", dur:"380 ms" },
+  { name:"should filter by price range",                        suite:"Search & Filter", file:"search.spec.ts:42", status:"passed", dur:"420 ms" },
+  { name:"should sort results by price asc",                    suite:"Search & Filter", file:"search.spec.ts:58", status:"passed", dur:"350 ms" },
+  { name:"should sort results by rating",                       suite:"Search & Filter", file:"search.spec.ts:74", status:"passed", dur:"370 ms" },
+  { name:"should show no results message",                      suite:"Search & Filter", file:"search.spec.ts:90", status:"passed", dur:"290 ms" },
+  { name:"should highlight search terms",                       suite:"Search & Filter", file:"search.spec.ts:104", status:"passed", dur:"310 ms" },
+  { name:"should remember recent searches",                     suite:"Search & Filter", file:"search.spec.ts:118", status:"passed", dur:"400 ms" },
+];
+
+/* ── Helpers ──────────────────────────────────────────────── */
+function toggleDetail(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+}
+
+function filterTests(filter, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTestList(filter);
+}
+
+function statusDotClass(s) {
+  return { passed:'dot-passed', failed:'dot-failed', flaky:'dot-flaky', skipped:'dot-skipped' }[s];
+}
+function statusBadgeClass(s) {
+  return { passed:'badge-passed', failed:'badge-failed', flaky:'badge-flaky', skipped:'badge-skipped' }[s];
+}
+function statusLabel(s) {
+  return { passed:'Passed', failed:'Failed', flaky:'Flaky', skipped:'Skipped' }[s];
+}
+
+let detailCount = 100;
+function renderTestList(filter='all') {
+  const list = document.getElementById('allTestsList');
+  const filtered = filter === 'all' ? allTests : allTests.filter(t => t.status === filter);
+  list.innerHTML = filtered.map((t, i) => {
+    const id = 'td' + (detailCount++);
+    const isFlaky = t.status === 'flaky';
+    return `
+    <div class="test-item">
+      <div class="test-item-header" onclick="toggleDetail('${id}')">
+        <div class="status-dot ${statusDotClass(t.status)} ${isFlaky ? 'pulse':''}"></div>
+        <div style="flex:1">
+          <div class="test-name">${t.name}</div>
+          <div class="test-file">${t.suite} › ${t.file}</div>
+        </div>
+        <span class="test-duration">⏱ ${t.dur}</span>
+        <span class="test-status-badge ${statusBadgeClass(t.status)}">${statusLabel(t.status)}</span>
+      </div>
+      <div class="test-detail" id="${id}">
+        ${isFlaky ? `<div class="retry-info">🔥 This test is <b>flaky</b> — it eventually passed after a retry. Consider investigating timing issues or external dependencies.</div>` : ''}
+        ${t.status === 'skipped' ? `<div style="color:var(--muted);font-size:.82rem">⏭ This test was skipped via <code>test.skip()</code>. It is not included in the pass/fail count.</div>` : ''}
+        ${t.status === 'passed' && !isFlaky ? `<div style="color:var(--green);font-size:.82rem">✅ Test passed successfully on the first attempt.</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ── Suite Grid ───────────────────────────────────────────── */
+function renderSuites() {
+  const grid = document.getElementById('suiteGrid');
+  const colors = ['#22c55e','#3b82f6','#a855f7','#ef4444','#f97316','#eab308','#14b8a6'];
+  grid.innerHTML = suites.map((s, i) => {
+    const pct = Math.round(s.passed / s.total * 100);
+    return `
+    <div class="suite-card">
+      <div class="suite-name">📂 ${s.name}</div>
+      <div class="suite-stats">
+        <div class="suite-stat"><div class="suite-stat-val" style="color:var(--green)">${s.passed}</div><div class="suite-stat-lbl">passed</div></div>
+        <div class="suite-stat"><div class="suite-stat-val" style="color:var(--red)">${s.failed}</div><div class="suite-stat-lbl">failed</div></div>
+        <div class="suite-stat"><div class="suite-stat-val" style="color:var(--orange)">${s.flaky}</div><div class="suite-stat-lbl">flaky</div></div>
+        <div class="suite-stat"><div class="suite-stat-val" style="color:var(--muted)">${s.skipped}</div><div class="suite-stat-lbl">skipped</div></div>
+        <div class="suite-stat"><div class="suite-stat-val" style="color:var(--muted);font-size:.95rem">${s.duration}</div><div class="suite-stat-lbl">time</div></div>
+      </div>
+      <div class="suite-bar">
+        <div class="suite-bar-fill" style="width:${pct}%;background:${colors[i]}"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ── Duration Chart ───────────────────────────────────────── */
+function renderChart() {
+  const maxD = Math.max(...durations);
+  const chart = document.getElementById('durationChart');
+  const labels = document.getElementById('chartLabels');
+  const colors = ['#22c55e','#3b82f6','#a855f7','#ef4444','#f97316','#eab308','#14b8a6'];
+  const sNames = suites.map(s => s.name.split(' ')[0]);
+
+  chart.innerHTML = durations.map((d, i) => {
+    const h = Math.round((d / maxD) * 80);
+    const c = suites[i].failed > 0 ? 'bar-failed' : (suites[i].flaky > 0 ? 'bar-flaky' : 'bar-passed');
+    return `<div class="bar ${c}" style="height:${h}px" data-label="${suites[i].name}: ${d}s" title="${suites[i].name}: ${d}s"></div>`;
+  }).join('');
+
+  labels.innerHTML = sNames.map(n => `<div class="chart-label">${n}</div>`).join('');
+}
+
+/* ── Animate progress bars ────────────────────────────────── */
+function animateBars() {
+  setTimeout(() => {
+    document.getElementById('pb-passed').style.width  = '95.1%';
+    document.getElementById('pb-flaky').style.width   = '3.66%';
+    document.getElementById('pb-failed').style.width  = '2.44%';
+    document.getElementById('pb-skipped').style.width = '2.44%';
+    // perf bars
+    document.getElementById('pf-load').style.width = '62%';
+    document.getElementById('pf-fcp').style.width  = '55%';
+    document.getElementById('pf-tti').style.width  = '61%';
+    document.getElementById('pf-lcp').style.width  = '57%';
+    document.getElementById('pf-cls').style.width  = '40%';
+    document.getElementById('pf-tbt').style.width  = '32%';
+  }, 300);
+}
+
+/* ── Init ─────────────────────────────────────────────────── */
+renderSuites();
+renderChart();
+renderTestList('all');
+animateBars();
+</script>
+</body>
+</html>
