@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pixails — Performance Report</title>
+  <style>
+    :root {
+      --green: #22c55e;
+      --yellow: #f59e0b;
+      --red: #ef4444;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --muted: #64748b;
+      --accent: #6366f1;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 2rem 1rem;
+    }
+
+    /* ── Header ── */
+    header {
+      max-width: 960px;
+      margin: 0 auto 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+    }
+    .logo-icon {
+      width: 42px; height: 42px;
+      background: var(--accent);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; color: #fff;
+    }
+    .logo h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -.5px; }
+    .logo span { font-size: .8rem; color: var(--muted); display: block; }
+    .report-meta { text-align: right; color: var(--muted); font-size: .85rem; }
+    .report-meta strong { color: var(--text); }
+
+    /* ── Summary bar ── */
+    .summary {
+      max-width: 960px;
+      margin: 0 auto 2.5rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.5rem 2rem;
+      display: flex;
+      gap: 2rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .summary-item { flex: 1; min-width: 120px; }
+    .summary-item .label { font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: .25rem; }
+    .summary-item .value { font-size: 2rem; font-weight: 700; }
+    .summary-divider { width: 1px; height: 50px; background: var(--border); }
+
+    /* ── Section title ── */
+    .section-title {
+      max-width: 960px;
+      margin: 0 auto 1.25rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    /* ── Page cards ── */
+    .cards {
+      max-width: 960px;
+      margin: 0 auto 3rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.5rem;
+      transition: box-shadow .2s;
+    }
+    .card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.07); }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+    }
+    .card-header h2 { font-size: 1rem; font-weight: 600; }
+    .card-header .url { font-size: .75rem; color: var(--muted); }
+
+    /* Gauge / Score circle */
+    .score-circle {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; font-weight: 800;
+      flex-shrink: 0;
+      border: 4px solid;
+    }
+    .score-circle.good   { border-color: var(--green); color: var(--green); }
+    .score-circle.ok     { border-color: var(--yellow); color: var(--yellow); }
+    .score-circle.poor   { border-color: var(--red); color: var(--red); }
+
+    /* CWV metrics */
+    .cwv { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .6rem; margin-top: .25rem; }
+    .metric {
+      background: var(--bg);
+      border-radius: 8px;
+      padding: .6rem .5rem;
+      text-align: center;
+    }
+    .metric .m-label { font-size: .65rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+    .metric .m-value { font-size: .95rem; font-weight: 700; margin-top: .15rem; }
+    .metric.good  .m-value { color: var(--green); }
+    .metric.ok    .m-value { color: var(--yellow); }
+    .metric.poor  .m-value { color: var(--red); }
+
+    /* Extra metrics row */
+    .extra { display: flex; gap: .6rem; margin-top: .6rem; }
+    .extra .metric { flex: 1; }
+
+    /* ── Legend ── */
+    .legend {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      font-size: .8rem;
+      color: var(--muted);
+    }
+    .legend span { display: flex; align-items: center; gap: .4rem; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+
+    /* ── Footer ── */
+    footer {
+      max-width: 960px;
+      margin: 3rem auto 0;
+      text-align: center;
+      font-size: .78rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      padding-top: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════
+     HEADER
+═══════════════════════════════════════════════════ -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    <div>
+      <h1>Pixails</h1>
+      <span>Performance Report</span>
+    </div>
+  </div>
+  <div class="report-meta">
+    <div>Generated: <strong>March 6, 2026</strong></div>
+    <div>Strategy: <strong>Desktop &amp; Mobile</strong></div>
+    <div>Tool: <strong>Lighthouse 12.0 (simulated)</strong></div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════════
+     SUMMARY
+═══════════════════════════════════════════════════ -->
+<div class="summary">
+  <div class="summary-item">
+    <div class="label">Pages Audited</div>
+    <div class="value" style="color:var(--accent)">6</div>
+  </div>
+  <div class="summary-divider"></div>
+  <div class="summary-item">
+    <div class="label">Avg. Performance</div>
+    <div class="value" style="color:var(--green)">78</div>
+  </div>
+  <div class="summary-divider"></div>
+  <div class="summary-item">
+    <div class="label">Good CWV Pages</div>
+    <div class="value" style="color:var(--green)">3 / 6</div>
+  </div>
+  <div class="summary-divider"></div>
+  <div class="summary-item">
+    <div class="label">Needs Improvement</div>
+    <div class="value" style="color:var(--yellow)">2 / 6</div>
+  </div>
+  <div class="summary-divider"></div>
+  <div class="summary-item">
+    <div class="label">Poor</div>
+    <div class="value" style="color:var(--red)">1 / 6</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PAGE CARDS
+═══════════════════════════════════════════════════ -->
+<p class="section-title">Core Web Vitals — Per Page</p>
+<div class="cards">
+
+  <!-- 1. Home -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h2>🏠 Home</h2>
+        <div class="url">pixails.com/</div>
+      </div>
+      <div class="score-circle good">92</div>
+    </div>
+    <div class="cwv">
+      <div class="metric good">
+        <div class="m-label">LCP</div>
+        <div class="m-value">1.8 s</div>
+      </div>
+      <div class="metric good">
+        <div class="m-label">INP</div>
+        <div class="m-value">62 ms</div>
+      </div>
+      <div class="metric good">
+        <div class="m-label">CLS</div>
+        <div class="m-value">0.04</div>
+      </div>
+    </div>
+    <div class="extra">
+      <div class="metric good">
+        <div class="m-label">FCP</div>
+        <div class="m-value">0.9 s</div>
+      </div>
+      <div class="metric good">
+        <div class="m-label">TTFB</div>
+        <div class="m-value">180 ms</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Products -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h2>🛍️ Products</h2>
+        <div class="url">pixails.com/products</div>
+      </div>
+      <div class="score-circle good">85</div>
+    </div>
+    <div class="cwv">
+      <div class="metric good">
+        <div class="m-label">LCP</div>
+        <div class="m-value">2.1 s</div>
+      </div>
+      <div class="metric good">
+        <div class="m-label">INP</div>
+        <div class="m-value">95 ms</div>
+      </div>
+      <div class="metric good">
+        <div class="m-label">CLS</div>
+        <div class="m-value">0.07</div>
+      </div>
+    </div>
+    <div class="extra">
+      <div class="metric good">
+        <div class="m-label">FCP</div>
+        <div class="m-value">1.2 s</div>
+      </div>
+      <div class="metric good">
+        <div class="m-label">TTFB</div>
+        <div class="m-value">210 ms</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Blog -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h2>📝 Blog</h2>
+        <div class="url">pixails.com/blog</div>
+      </div>
+      <div class="score-circle good">80</div>
+    </div>
+    <div class="cwv">
+      <div class="metric good">
+        <div class="m-label">LCP</div>
+        <div class="m-value">2.4 s</div>
+      </div>
+      <div class="metric ok">
+        <div class="m-label">INP</div>
+        <div class="m-value">185 ms</div>
+      </div>
+      <div class="metric good">
+        <div class="m-label">CLS</div>
+        <div class="m-value">0.05</div>
+      </div>
+    </div>
+    <div class="extra">
+      <div class="metric good">
+        <div class="m-label">FCP</div>
+        <div class="m-value">1.4 s</div>
+      </div>
+      <div class="metric ok">
+        <div class="m-label">TTFB</div>
+        <div class="m-value">520 ms</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Pricing -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h2>💰 Pricing</h2>
+        <div class="url">pixails.com/pricing</div>
+      </div>
+      <div class="score-circle ok">67</div>
+    </div>
+    <div class="cwv">
+      <div class="metric ok">
+        <div class="m-label">LCP</div>
+        <div class="m-value">3.6 s</div>
+      </div>
+      <div class="metric ok">
+        <div class="m-label">INP</div>
+        <div class="m-value">210 ms</div>
+      </div>
+      <div class="metric ok">
+        <div class="m-label">CLS</div>
+        <div class="m-value">0.14</div>
+      </div>
+    </div>
+    <div class="extra">
+      <div class="metric ok">
+        <div class="m-label">FCP</div>
+        <div class="m-value">1.9 s</div>
+      </div>
+      <div class="metric ok">
+        <div class="m-label">TTFB</div>
+        <div class="m-value">680 ms</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Dashboard -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h2>📊 Dashboard</h2>
+        <div class="url">pixails.com/dashboard</div>
+      </div>
+      <div class="score-circle ok">71</div>
+    </div>
+    <div class="cwv">
+      <div class="metric ok">
+        <div class="m-label">LCP</div>
+        <div class="m-value">3.2 s</div>
+      </div>
+      <div class="metric good">
+        <div class="m-label">INP</div>
+        <div class="m-value">110 ms</div>
+      </div>
+      <div class="metric ok">
+        <div class="m-label">CLS</div>
+        <div class="m-value">0.18</div>
+      </div>
+    </div>
+    <div class="extra">
+      <div class="metric ok">
+        <div class="m-label">FCP</div>
+        <div class="m-value">1.7 s</div>
+      </div>
+      <div class="metric ok">
+        <div class="m-label">TTFB</div>
+        <div class="m-value">590 ms</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Contact -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h2>✉️ Contact</h2>
+        <div class="url">pixails.com/contact</div>
+      </div>
+      <div class="score-circle poor">44</div>
+    </div>
+    <div class="cwv">
+      <div class="metric poor">
+        <div class="m-label">LCP</div>
+        <div class="m-value">5.8 s</div>
+      </div>
+      <div class="metric poor">
+        <div class="m-label">INP</div>
+        <div class="m-value">420 ms</div>
+      </div>
+      <div class="metric ok">
+        <div class="m-label">CLS</div>
+        <div class="m-value">0.21</div>
+      </div>
+    </div>
+    <div class="extra">
+      <div class="metric poor">
+        <div class="m-label">FCP</div>
+        <div class="m-value">3.1 s</div>
+      </div>
+      <div class="metric poor">
+        <div class="m-label">TTFB</div>
+        <div class="m-value">1.4 s</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /cards -->
+
+<!-- ═══════════════════════════════════════════════════
+     LEGEND
+═══════════════════════════════════════════════════ -->
+<div class="legend">
+  <span><span class="dot" style="background:var(--green)"></span> Good</span>
+  <span><span class="dot" style="background:var(--yellow)"></span> Needs Improvement</span>
+  <span><span class="dot" style="background:var(--red)"></span> Poor</span>
+  <span>LCP: Largest Contentful Paint &nbsp;·&nbsp; INP: Interaction to Next Paint &nbsp;·&nbsp; CLS: Cumulative Layout Shift &nbsp;·&nbsp; FCP: First Contentful Paint &nbsp;·&nbsp; TTFB: Time to First Byte</span>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════════════════ -->
+<footer>
+  ⚡ Pixails Performance Report · Data is simulated for demonstration purposes · © 2026 Pixails
+</footer>
+
+</body>
+</html>
