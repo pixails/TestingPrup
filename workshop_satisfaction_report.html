@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reporte de Satisfacción del Workshop</title>
+  <style>
+    /* ── Reset & base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #f0f4f8;
+      color: #2d3748;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+      padding: 2.5rem 2rem 2rem;
+      text-align: center;
+    }
+    .header h1 { font-size: 2rem; font-weight: 700; margin-bottom: .4rem; }
+    .header .subtitle { font-size: 1rem; opacity: .85; margin-bottom: 1.5rem; }
+
+    .meta-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: .75rem;
+      font-size: .875rem;
+    }
+    .meta-item {
+      background: rgba(255,255,255,.18);
+      border-radius: 20px;
+      padding: .35rem .9rem;
+      backdrop-filter: blur(6px);
+    }
+
+    /* ── Main layout ── */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem;
+    }
+
+    /* ── Section titles ── */
+    .section-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #4a5568;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 2px;
+      background: linear-gradient(90deg, #667eea33, transparent);
+      border-radius: 2px;
+    }
+
+    /* ── KPI cards ── */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2.5rem;
+    }
+    .kpi-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 1.5rem 1.25rem;
+      text-align: center;
+      box-shadow: 0 2px 12px rgba(0,0,0,.07);
+      transition: transform .15s, box-shadow .15s;
+    }
+    .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,.1); }
+    .kpi-value {
+      font-size: 2.4rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.1;
+    }
+    .kpi-label { font-size: .85rem; color: #718096; margin-top: .4rem; }
+    .kpi-icon { font-size: 1.6rem; margin-bottom: .5rem; }
+
+    /* ── Charts grid ── */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+    .card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,.07);
+    }
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #4a5568;
+      margin-bottom: 1rem;
+    }
+
+    /* ── SVG charts ── */
+    .svg-wrap { width: 100%; overflow: visible; }
+
+    /* ── Donut legend ── */
+    .donut-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem .9rem;
+      margin-top: 1rem;
+      font-size: .8rem;
+      color: #4a5568;
+    }
+    .legend-item { display: flex; align-items: center; gap: .35rem; }
+    .legend-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ── Category bars ── */
+    .category-list { display: flex; flex-direction: column; gap: .9rem; }
+    .cat-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: .875rem;
+      margin-bottom: .3rem;
+      color: #4a5568;
+    }
+    .cat-score { font-weight: 600; color: #667eea; }
+    .bar-track {
+      height: 10px;
+      background: #e2e8f0;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 6px;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+      transition: width .8s ease;
+    }
+
+    /* ── Stars ── */
+    .stars { color: #f6ad55; font-size: 1rem; }
+
+    /* ── Comments ── */
+    .comments-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2.5rem;
+    }
+    .comment-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 1.25rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,.07);
+      border-left: 4px solid #667eea;
+    }
+    .comment-text {
+      font-size: .9rem;
+      color: #4a5568;
+      line-height: 1.55;
+      margin-bottom: .75rem;
+      font-style: italic;
+    }
+    .comment-text::before { content: '\201C'; }
+    .comment-text::after  { content: '\201D'; }
+    .comment-author {
+      font-size: .8rem;
+      color: #a0aec0;
+      font-weight: 600;
+    }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      color: #a0aec0;
+      font-size: .8rem;
+    }
+    footer strong { color: #667eea; }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════ HEADER ══════════════════════ -->
+<header class="header">
+  <h1>📋 Reporte de Satisfacción del Workshop</h1>
+  <p class="subtitle" id="workshopName"></p>
+  <div class="meta-grid" id="metaGrid"></div>
+</header>
+
+<!-- ══════════════════════ MAIN ══════════════════════ -->
+<main class="container">
+
+  <!-- KPI Cards -->
+  <h2 class="section-title">🎯 Indicadores Clave</h2>
+  <div class="kpi-row" id="kpiRow"></div>
+
+  <!-- Charts row -->
+  <h2 class="section-title">📊 Análisis de Satisfacción</h2>
+  <div class="charts-grid">
+    <!-- Distribution donut -->
+    <div class="card">
+      <p class="card-title">Distribución de Respuestas</p>
+      <div id="donutContainer"></div>
+      <div class="donut-legend" id="donutLegend"></div>
+    </div>
+    <!-- Category bar chart (horizontal) -->
+    <div class="card">
+      <p class="card-title">Puntuación por Categoría</p>
+      <div id="barChartContainer"></div>
+    </div>
+  </div>
+
+  <!-- Category progress bars -->
+  <h2 class="section-title">📈 Detalle por Categoría</h2>
+  <div class="card" style="margin-bottom:2.5rem">
+    <div class="category-list" id="categoryList"></div>
+  </div>
+
+  <!-- Comments -->
+  <h2 class="section-title">💬 Comentarios de Participantes</h2>
+  <div class="comments-grid" id="commentsGrid"></div>
+
+</main>
+
+<footer>
+  Reporte generado el <strong id="genDate"></strong> &nbsp;|&nbsp; Todos los datos son confidenciales.
+</footer>
+
+<!-- ══════════════════════ DATA & RENDERING ══════════════════════ -->
+<script>
+const data = {
+  workshop: {
+    name: "Taller de Desarrollo de Software Ágil",
+    date: "2026-03-20",
+    location: "Sala de Conferencias A",
+    instructor: "María González",
+    duration: "8 horas",
+    total_participants: 32
+  },
+  summary: {
+    overall_satisfaction: 4.3,
+    would_recommend: 91,
+    responses_received: 28
+  },
+  categories: [
+    { name: "Contenido del Taller",     score: 4.4, max: 5 },
+    { name: "Instructor / Facilitador", score: 4.6, max: 5 },
+    { name: "Organización y Logística", score: 4.0, max: 5 },
+    { name: "Material Didáctico",       score: 4.2, max: 5 },
+    { name: "Duración",                 score: 3.8, max: 5 },
+    { name: "Aplicabilidad Práctica",   score: 4.5, max: 5 }
+  ],
+  satisfaction_distribution: {
+    "Muy Satisfecho (5)":  13,
+    "Satisfecho (4)":      10,
+    "Neutral (3)":          3,
+    "Insatisfecho (2)":     2,
+    "Muy Insatisfecho (1)": 0
+  },
+  comments: [
+    { participant: "Participante 1", rating: 5, comment: "Excelente taller, muy práctico y con ejemplos reales del mundo laboral." },
+    { participant: "Participante 2", rating: 4, comment: "Muy buena dinámica, aunque habría agradecido más tiempo para los ejercicios." },
+    { participant: "Participante 3", rating: 5, comment: "La instructora explicó de manera muy clara y respondió todas nuestras dudas." },
+    { participant: "Participante 4", rating: 3, comment: "El contenido fue interesante pero la duración fue demasiado corta para profundizar." },
+    { participant: "Participante 5", rating: 4, comment: "Buen manejo del grupo y materiales bien elaborados. Recomendaría el taller." },
+    { participant: "Participante 6", rating: 5, comment: "Uno de los mejores talleres a los que he asistido. Muy enriquecedor." }
+  ]
+};
+
+/* ── Helpers ── */
+function stars(n) {
+  return '<span class="stars">' + '★'.repeat(n) + '☆'.repeat(5 - n) + '</span>';
+}
+
+function formatDate(iso) {
+  return new Date(iso + 'T12:00:00').toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+/* ── Header ── */
+document.getElementById('workshopName').textContent = data.workshop.name;
+document.getElementById('genDate').textContent = new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
+
+[
+  { icon: '📅', text: formatDate(data.workshop.date) },
+  { icon: '📍', text: data.workshop.location },
+  { icon: '👩‍🏫', text: data.workshop.instructor },
+  { icon: '⏱️', text: data.workshop.duration },
+  { icon: '👥', text: data.workshop.total_participants + ' participantes' }
+].forEach(m => {
+  const el = document.createElement('div');
+  el.className = 'meta-item';
+  el.textContent = m.icon + ' ' + m.text;
+  document.getElementById('metaGrid').appendChild(el);
+});
+
+/* ── KPI Cards ── */
+[
+  { icon: '⭐', value: data.summary.overall_satisfaction.toFixed(1) + ' / 5', label: 'Satisfacción General' },
+  { icon: '👍', value: data.summary.would_recommend + '%',  label: 'Recomendarían el Taller' },
+  { icon: '📝', value: data.summary.responses_received,     label: 'Respuestas Recibidas' },
+  { icon: '👤', value: data.workshop.total_participants,     label: 'Total Participantes' }
+].forEach(k => {
+  document.getElementById('kpiRow').innerHTML += `
+    <div class="kpi-card">
+      <div class="kpi-icon">${k.icon}</div>
+      <div class="kpi-value">${k.value}</div>
+      <div class="kpi-label">${k.label}</div>
+    </div>`;
+});
+
+/* ──────────────────────────────────────────────────
+   SVG Donut Chart
+────────────────────────────────────────────────── */
+(function buildDonut() {
+  const colors = ['#667eea', '#764ba2', '#f6ad55', '#fc8181', '#cbd5e0'];
+  const dist = data.satisfaction_distribution;
+  const labels = Object.keys(dist);
+  const values = Object.values(dist);
+  const total = values.reduce((a, b) => a + b, 0);
+
+  const cx = 110, cy = 110, R = 85, r = 52;
+  let startAngle = -Math.PI / 2;
+  let paths = '';
+
+  values.forEach((v, i) => {
+    if (v === 0) return;
+    const angle = (v / total) * 2 * Math.PI;
+    const endAngle = startAngle + angle;
+    const x1 = cx + R * Math.cos(startAngle), y1 = cy + R * Math.sin(startAngle);
+    const x2 = cx + R * Math.cos(endAngle),   y2 = cy + R * Math.sin(endAngle);
+    const ix1 = cx + r * Math.cos(startAngle), iy1 = cy + r * Math.sin(startAngle);
+    const ix2 = cx + r * Math.cos(endAngle),   iy2 = cy + r * Math.sin(endAngle);
+    const large = angle > Math.PI ? 1 : 0;
+    paths += `<path d="M${x1},${y1} A${R},${R} 0 ${large},1 ${x2},${y2}
+                       L${ix2},${iy2} A${r},${r} 0 ${large},0 ${ix1},${iy1} Z"
+              fill="${colors[i]}" stroke="#fff" stroke-width="2">
+              <title>${labels[i]}: ${v} respuestas</title></path>`;
+    startAngle = endAngle;
+  });
+
+  const pct = Math.round(
+    ((dist["Muy Satisfecho (5)"] + dist["Satisfecho (4)"]) / total) * 100
+  );
+
+  document.getElementById('donutContainer').innerHTML = `
+    <svg viewBox="0 0 220 220" class="svg-wrap" style="max-height:220px">
+      ${paths}
+      <text x="${cx}" y="${cy - 8}" text-anchor="middle" font-size="22" font-weight="700" fill="#4a5568">${pct}%</text>
+      <text x="${cx}" y="${cy + 14}" text-anchor="middle" font-size="10" fill="#718096">satisfechos</text>
+    </svg>`;
+
+  const legend = document.getElementById('donutLegend');
+  labels.forEach((l, i) => {
+    legend.innerHTML += `<span class="legend-item">
+      <span class="legend-dot" style="background:${colors[i]}"></span>${l} (${values[i]})
+    </span>`;
+  });
+})();
+
+/* ──────────────────────────────────────────────────
+   SVG Horizontal Bar Chart (categories)
+────────────────────────────────────────────────── */
+(function buildBarChart() {
+  const cats = data.categories;
+  const barColors = ['#667eea','#764ba2','#9f7aea','#4299e1','#48bb78','#ed8936'];
+  const svgW = 400, barH = 24, gap = 14;
+  const labelW = 155, barMaxW = 180, padTop = 10, numW = 40;
+  const svgH = padTop + cats.length * (barH + gap);
+
+  let bars = '';
+  cats.forEach((c, i) => {
+    const y = padTop + i * (barH + gap);
+    const w = (c.score / c.max) * barMaxW;
+    bars += `
+      <text x="${labelW - 6}" y="${y + barH / 2 + 5}" text-anchor="end" font-size="11.5" fill="#4a5568">${c.name}</text>
+      <rect x="${labelW}" y="${y}" width="${barMaxW}" height="${barH}" rx="5" fill="#e2e8f0"/>
+      <rect x="${labelW}" y="${y}" width="${w}" height="${barH}" rx="5" fill="${barColors[i]}"/>
+      <text x="${labelW + barMaxW + 8}" y="${y + barH / 2 + 5}" font-size="12" font-weight="600" fill="${barColors[i]}">${c.score}</text>`;
+  });
+
+  document.getElementById('barChartContainer').innerHTML = `
+    <svg viewBox="0 0 ${svgW} ${svgH}" class="svg-wrap" style="max-height:${svgH + 10}px">
+      ${bars}
+    </svg>`;
+})();
+
+/* ── Category progress bars ── */
+data.categories.forEach(c => {
+  const pct = (c.score / c.max * 100).toFixed(1);
+  document.getElementById('categoryList').innerHTML += `
+    <div>
+      <div class="cat-header">
+        <span>${c.name}</span>
+        <span class="cat-score">${c.score} / ${c.max}</span>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:${pct}%"></div>
+      </div>
+    </div>`;
+});
+
+/* ── Comments ── */
+data.comments.forEach(c => {
+  document.getElementById('commentsGrid').innerHTML += `
+    <div class="comment-card">
+      <p class="comment-text">${c.comment}</p>
+      <div class="comment-author">${c.participant} &nbsp; ${stars(c.rating)}</div>
+    </div>`;
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+{
+  "workshop": {
+    "name": "Taller de Desarrollo de Software Ágil",
+    "date": "2026-03-20",
+    "location": "Sala de Conferencias A",
+    "instructor": "María González",
+    "duration": "8 horas",
+    "total_participants": 32
+  },
+  "summary": {
+    "overall_satisfaction": 4.3,
+    "would_recommend": 91,
+    "responses_received": 28
+  },
+  "categories": [
+    { "name": "Contenido del Taller",        "score": 4.4, "max": 5 },
+    { "name": "Instructor / Facilitador",    "score": 4.6, "max": 5 },
+    { "name": "Organización y Logística",    "score": 4.0, "max": 5 },
+    { "name": "Material Didáctico",          "score": 4.2, "max": 5 },
+    { "name": "Duración",                    "score": 3.8, "max": 5 },
+    { "name": "Aplicabilidad Práctica",      "score": 4.5, "max": 5 }
+  ],
+  "satisfaction_distribution": {
+    "Muy Satisfecho (5)": 13,
+    "Satisfecho (4)":     10,
+    "Neutral (3)":         3,
+    "Insatisfecho (2)":    2,
+    "Muy Insatisfecho (1)": 0
+  },
+  "comments": [
+    {
+      "participant": "Participante 1",
+      "rating": 5,
+      "comment": "Excelente taller, muy práctico y con ejemplos reales del mundo laboral."
+    },
+    {
+      "participant": "Participante 2",
+      "rating": 4,
+      "comment": "Muy buena dinámica, aunque habría agradecido más tiempo para los ejercicios."
+    },
+    {
+      "participant": "Participante 3",
+      "rating": 5,
+      "comment": "La instructora explicó de manera muy clara y respondió todas nuestras dudas."
+    },
+    {
+      "participant": "Participante 4",
+      "rating": 3,
+      "comment": "El contenido fue interesante pero la duración fue demasiado corta para profundizar."
+    },
+    {
+      "participant": "Participante 5",
+      "rating": 4,
+      "comment": "Buen manejo del grupo y materiales bien elaborados. Recomendaría el taller."
+    },
+    {
+      "participant": "Participante 6",
+      "rating": 5,
+      "comment": "Uno de los mejores talleres a los que he asistido. Muy enriquecedor."
+    }
+  ]
+}
