@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reporte F1 2026 – Resultados de Temporada</title>
+  <style>
+    /* ── Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --red:   #e10600;
+      --dark:  #15151e;
+      --mid:   #1e1e2e;
+      --card:  #27273a;
+      --text:  #f0f0f0;
+      --muted: #9090b0;
+      --gold:  #ffd700;
+      --silver:#c0c0c0;
+      --bronze:#cd7f32;
+    }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: var(--dark);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, #0d0d14 0%, var(--red) 100%);
+      padding: 2.5rem 2rem 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    header::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0; right: 0;
+      height: 4px;
+      background: var(--red);
+    }
+    header h1 { font-size: 2.4rem; letter-spacing: 3px; text-transform: uppercase; }
+    header p  { color: rgba(255,255,255,.7); margin-top: .4rem; font-size: .95rem; letter-spacing: 1px; }
+    .f1-logo  { font-size: 1.1rem; font-weight: 900; letter-spacing: 6px; color: var(--red);
+                background: #fff; padding: .15rem .6rem; border-radius: 3px; margin-bottom: .8rem;
+                display: inline-block; }
+
+    /* ── Layout ── */
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+    .section-title {
+      font-size: 1.3rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border-left: 4px solid var(--red);
+      padding-left: .8rem;
+      margin: 2.5rem 0 1.2rem;
+    }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    /* ── Card ── */
+    .card {
+      background: var(--card);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,.4);
+    }
+    .card-header {
+      background: var(--mid);
+      padding: .7rem 1.2rem;
+      font-size: .85rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 2px solid var(--red);
+    }
+
+    /* ── Tables ── */
+    table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+    thead th {
+      background: var(--mid);
+      padding: .6rem .9rem;
+      text-align: left;
+      font-size: .75rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    tbody tr { border-bottom: 1px solid rgba(255,255,255,.05); transition: background .15s; }
+    tbody tr:hover { background: rgba(255,255,255,.04); }
+    tbody td { padding: .65rem .9rem; vertical-align: middle; }
+    .pos { font-weight: 700; font-size: 1.05rem; width: 38px; }
+    .pos-1  { color: var(--gold); }
+    .pos-2  { color: var(--silver); }
+    .pos-3  { color: var(--bronze); }
+    .pts    { font-weight: 700; color: var(--red); }
+    .team-dot {
+      display: inline-block;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      margin-right: 7px;
+      vertical-align: middle;
+    }
+    .flag { font-size: 1.1rem; margin-right: 5px; }
+    .fastest { color: #b44de8; font-weight: 700; }
+
+    /* ── Race cards grid ── */
+    .races-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.2rem; }
+    .race-card { background: var(--card); border-radius: 10px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,.35); }
+    .race-card-header {
+      background: linear-gradient(90deg, var(--mid), #2a2a3f);
+      padding: .8rem 1.1rem;
+      border-bottom: 2px solid var(--red);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .race-name  { font-weight: 700; font-size: 1rem; }
+    .race-round { font-size: .75rem; color: var(--muted); background: var(--dark);
+                  padding: .2rem .5rem; border-radius: 20px; }
+    .race-date  { font-size: .8rem; color: var(--muted); padding: .3rem 1.1rem .5rem; }
+    .podium {
+      display: flex;
+      gap: .6rem;
+      padding: .8rem 1.1rem;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .podium-item {
+      flex: 1;
+      background: var(--mid);
+      border-radius: 8px;
+      padding: .5rem .4rem;
+      text-align: center;
+      font-size: .8rem;
+    }
+    .podium-item .p-pos  { font-size: 1.2rem; font-weight: 900; margin-bottom: .1rem; }
+    .podium-item .p-name { font-weight: 600; font-size: .85rem; }
+    .podium-item .p-team { color: var(--muted); font-size: .73rem; margin-top: .1rem; }
+    .podium-item.p1 { border-top: 3px solid var(--gold);   }
+    .podium-item.p2 { border-top: 3px solid var(--silver); }
+    .podium-item.p3 { border-top: 3px solid var(--bronze); }
+
+    /* ── Stats bar ── */
+    .stats-bar {
+      display: flex;
+      gap: 1.2rem;
+      padding: .9rem 1.1rem .8rem;
+      font-size: .8rem;
+    }
+    .stat { text-align: center; flex: 1; }
+    .stat .s-val { font-size: 1.15rem; font-weight: 700; color: var(--text); }
+    .stat .s-lbl { color: var(--muted); margin-top: .1rem; }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: .8rem;
+      padding: 1.5rem;
+      border-top: 1px solid rgba(255,255,255,.07);
+    }
+
+    /* ── Badges ── */
+    .badge-dnf  { background: #4a1010; color: #ff6b6b; padding: .1rem .45rem; border-radius: 4px; font-size: .78rem; font-weight: 700; }
+    .badge-dns  { background: #3a3a10; color: #ffd700; padding: .1rem .45rem; border-radius: 4px; font-size: .78rem; font-weight: 700; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="f1-logo">F1</div>
+  <h1>FÓRMULA 1 – TEMPORADA 2026</h1>
+  <p>Reporte Oficial de Resultados &nbsp;|&nbsp; Actualizado: 22 de Abril de 2026</p>
+</header>
+
+<main>
+
+  <!-- ══════════════════════════════════════════════
+       CAMPEONATO DE PILOTOS
+  ══════════════════════════════════════════════ -->
+  <div class="section-title">🏆 Campeonato de Pilotos</div>
+  <div class="card">
+    <div class="card-header">Clasificación General – Pilotos</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Pos</th><th>Piloto</th><th>Equipo</th><th>Nac.</th>
+          <th>Victorias</th><th>Podios</th><th>Puntos</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="pos pos-1">1</td>
+          <td><strong>Lando Norris</strong></td>
+          <td><span class="team-dot" style="background:#ff8000"></span>McLaren-Mercedes</td>
+          <td><span class="flag">🇬🇧</span>GBR</td>
+          <td>2</td><td>4</td><td class="pts">97</td>
+        </tr>
+        <tr>
+          <td class="pos pos-2">2</td>
+          <td><strong>Max Verstappen</strong></td>
+          <td><span class="team-dot" style="background:#3671c6"></span>Red Bull Racing</td>
+          <td><span class="flag">🇳🇱</span>NED</td>
+          <td>1</td><td>3</td><td class="pts">85</td>
+        </tr>
+        <tr>
+          <td class="pos pos-3">3</td>
+          <td><strong>Charles Leclerc</strong></td>
+          <td><span class="team-dot" style="background:#e8002d"></span>Ferrari</td>
+          <td><span class="flag">🇲🇨</span>MON</td>
+          <td>1</td><td>3</td><td class="pts">79</td>
+        </tr>
+        <tr>
+          <td class="pos">4</td>
+          <td><strong>George Russell</strong></td>
+          <td><span class="team-dot" style="background:#27f4d2"></span>Mercedes-AMG</td>
+          <td><span class="flag">🇬🇧</span>GBR</td>
+          <td>0</td><td>2</td><td class="pts">61</td>
+        </tr>
+        <tr>
+          <td class="pos">5</td>
+          <td><strong>Oscar Piastri</strong></td>
+          <td><span class="team-dot" style="background:#ff8000"></span>McLaren-Mercedes</td>
+          <td><span class="flag">🇦🇺</span>AUS</td>
+          <td>0</td><td>2</td><td class="pts">58</td>
+        </tr>
+        <tr>
+          <td class="pos">6</td>
+          <td><strong>Lewis Hamilton</strong></td>
+          <td><span class="team-dot" style="background:#e8002d"></span>Ferrari</td>
+          <td><span class="flag">🇬🇧</span>GBR</td>
+          <td>0</td><td>1</td><td class="pts">46</td>
+        </tr>
+        <tr>
+          <td class="pos">7</td>
+          <td><strong>Fernando Alonso</strong></td>
+          <td><span class="team-dot" style="background:#358c75"></span>Aston Martin</td>
+          <td><span class="flag">🇪🇸</span>ESP</td>
+          <td>0</td><td>0</td><td class="pts">33</td>
+        </tr>
+        <tr>
+          <td class="pos">8</td>
+          <td><strong>Kimi Antonelli</strong></td>
+          <td><span class="team-dot" style="background:#27f4d2"></span>Mercedes-AMG</td>
+          <td><span class="flag">🇮🇹</span>ITA</td>
+          <td>0</td><td>0</td><td class="pts">28</td>
+        </tr>
+        <tr>
+          <td class="pos">9</td>
+          <td><strong>Yuki Tsunoda</strong></td>
+          <td><span class="team-dot" style="background:#3671c6"></span>Red Bull Racing</td>
+          <td><span class="flag">🇯🇵</span>JPN</td>
+          <td>0</td><td>0</td><td class="pts">20</td>
+        </tr>
+        <tr>
+          <td class="pos">10</td>
+          <td><strong>Isack Hadjar</strong></td>
+          <td><span class="team-dot" style="background:#6692ff"></span>Racing Bulls</td>
+          <td><span class="flag">🇫🇷</span>FRA</td>
+          <td>0</td><td>0</td><td class="pts">14</td>
+        </tr>
+        <tr>
+          <td class="pos">11</td>
+          <td>Lance Stroll</td>
+          <td><span class="team-dot" style="background:#358c75"></span>Aston Martin</td>
+          <td><span class="flag">🇨🇦</span>CAN</td>
+          <td>0</td><td>0</td><td class="pts">12</td>
+        </tr>
+        <tr>
+          <td class="pos">12</td>
+          <td>Alexander Albon</td>
+          <td><span class="team-dot" style="background:#64c4ff"></span>Williams-Mercedes</td>
+          <td><span class="flag">🇹🇭</span>THA</td>
+          <td>0</td><td>0</td><td class="pts">10</td>
+        </tr>
+        <tr>
+          <td class="pos">13</td>
+          <td>Carlos Sainz</td>
+          <td><span class="team-dot" style="background:#52e252"></span>Williams-Mercedes</td>
+          <td><span class="flag">🇪🇸</span>ESP</td>
+          <td>0</td><td>0</td><td class="pts">8</td>
+        </tr>
+        <tr>
+          <td class="pos">14</td>
+          <td>Nico Hülkenberg</td>
+          <td><span class="team-dot" style="background:#b6babd"></span>Sauber-Audi</td>
+          <td><span class="flag">🇩🇪</span>GER</td>
+          <td>0</td><td>0</td><td class="pts">6</td>
+        </tr>
+        <tr>
+          <td class="pos">15</td>
+          <td>Oliver Bearman</td>
+          <td><span class="team-dot" style="background:#b94700"></span>Haas-Ferrari</td>
+          <td><span class="flag">🇬🇧</span>GBR</td>
+          <td>0</td><td>0</td><td class="pts">4</td>
+        </tr>
+        <tr>
+          <td class="pos">16</td>
+          <td>Esteban Ocon</td>
+          <td><span class="team-dot" style="background:#b94700"></span>Haas-Ferrari</td>
+          <td><span class="flag">🇫🇷</span>FRA</td>
+          <td>0</td><td>0</td><td class="pts">3</td>
+        </tr>
+        <tr>
+          <td class="pos">17</td>
+          <td>Pierre Gasly</td>
+          <td><span class="team-dot" style="background:#0093cc"></span>Alpine-Renault</td>
+          <td><span class="flag">🇫🇷</span>FRA</td>
+          <td>0</td><td>0</td><td class="pts">2</td>
+        </tr>
+        <tr>
+          <td class="pos">18</td>
+          <td>Jack Doohan</td>
+          <td><span class="team-dot" style="background:#0093cc"></span>Alpine-Renault</td>
+          <td><span class="flag">🇦🇺</span>AUS</td>
+          <td>0</td><td>0</td><td class="pts">1</td>
+        </tr>
+        <tr>
+          <td class="pos">19</td>
+          <td>Liam Lawson</td>
+          <td><span class="team-dot" style="background:#6692ff"></span>Racing Bulls</td>
+          <td><span class="flag">🇳🇿</span>NZL</td>
+          <td>0</td><td>0</td><td class="pts">0</td>
+        </tr>
+        <tr>
+          <td class="pos">20</td>
+          <td>Gabriel Bortoleto</td>
+          <td><span class="team-dot" style="background:#b6babd"></span>Sauber-Audi</td>
+          <td><span class="flag">🇧🇷</span>BRA</td>
+          <td>0</td><td>0</td><td class="pts">0</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       CAMPEONATO DE CONSTRUCTORES
+  ══════════════════════════════════════════════ -->
+  <div class="section-title">🏗️ Campeonato de Constructores</div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header">Clasificación General – Equipos</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Pos</th><th>Equipo</th><th>Motor</th><th>Puntos</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="pos pos-1">1</td>
+            <td><span class="team-dot" style="background:#ff8000"></span><strong>McLaren</strong></td>
+            <td>Mercedes</td>
+            <td class="pts">155</td>
+          </tr>
+          <tr>
+            <td class="pos pos-2">2</td>
+            <td><span class="team-dot" style="background:#e8002d"></span><strong>Ferrari</strong></td>
+            <td>Ferrari</td>
+            <td class="pts">125</td>
+          </tr>
+          <tr>
+            <td class="pos pos-3">3</td>
+            <td><span class="team-dot" style="background:#3671c6"></span><strong>Red Bull Racing</strong></td>
+            <td>Red Bull Powertrains</td>
+            <td class="pts">105</td>
+          </tr>
+          <tr>
+            <td class="pos">4</td>
+            <td><span class="team-dot" style="background:#27f4d2"></span>Mercedes-AMG</td>
+            <td>Mercedes</td>
+            <td class="pts">89</td>
+          </tr>
+          <tr>
+            <td class="pos">5</td>
+            <td><span class="team-dot" style="background:#358c75"></span>Aston Martin</td>
+            <td>Mercedes</td>
+            <td class="pts">45</td>
+          </tr>
+          <tr>
+            <td class="pos">6</td>
+            <td><span class="team-dot" style="background:#6692ff"></span>Racing Bulls</td>
+            <td>Red Bull Powertrains</td>
+            <td class="pts">34</td>
+          </tr>
+          <tr>
+            <td class="pos">7</td>
+            <td><span class="team-dot" style="background:#52e252"></span>Williams</td>
+            <td>Mercedes</td>
+            <td class="pts">18</td>
+          </tr>
+          <tr>
+            <td class="pos">8</td>
+            <td><span class="team-dot" style="background:#b6babd"></span>Sauber-Audi</td>
+            <td>Audi</td>
+            <td class="pts">6</td>
+          </tr>
+          <tr>
+            <td class="pos">9</td>
+            <td><span class="team-dot" style="background:#b94700"></span>Haas</td>
+            <td>Ferrari</td>
+            <td class="pts">7</td>
+          </tr>
+          <tr>
+            <td class="pos">10</td>
+            <td><span class="team-dot" style="background:#0093cc"></span>Alpine</td>
+            <td>Renault</td>
+            <td class="pts">3</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Season Quick Stats -->
+    <div style="display:flex; flex-direction:column; gap:1rem;">
+      <div class="card">
+        <div class="card-header">Resumen de la Temporada</div>
+        <table>
+          <tbody>
+            <tr><td>Carreras disputadas</td><td class="pts" style="text-align:right">4 / 24</td></tr>
+            <tr><td>Vueltas rápidas (piloto)</td><td style="text-align:right"><span class="fastest">Verstappen (2)</span></td></tr>
+            <tr><td>Mayor distancia dominada</td><td style="text-align:right">Norris</td></tr>
+            <tr><td>Abandonos registrados</td><td style="text-align:right">7</td></tr>
+            <tr><td>Safety Cars desplegados</td><td style="text-align:right">5</td></tr>
+            <tr><td>Remontada más destacada</td><td style="text-align:right">Alonso P12→P5</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-header">Próxima Carrera</div>
+        <table>
+          <tbody>
+            <tr><td>Gran Premio</td><td style="text-align:right"><strong>🇩🇪 Gran Premio de Alemania</strong></td></tr>
+            <tr><td>Circuito</td><td style="text-align:right">Hockenheimring</td></tr>
+            <tr><td>Fecha</td><td style="text-align:right">2–3 de Mayo 2026</td></tr>
+            <tr><td>Ronda</td><td style="text-align:right">5 / 24</td></tr>
+            <tr><td>Vueltas</td><td style="text-align:right">67</td></tr>
+            <tr><td>Longitud</td><td style="text-align:right">4.574 km</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       RESULTADOS POR CARRERA
+  ══════════════════════════════════════════════ -->
+  <div class="section-title">🏁 Resultados por Carrera</div>
+  <div class="races-grid">
+
+    <!-- ── Ronda 1: Australia ── -->
+    <div class="race-card">
+      <div class="race-card-header">
+        <span class="race-name">🇦🇺 Gran Premio de Australia</span>
+        <span class="race-round">Ronda 1</span>
+      </div>
+      <div class="race-date">📅 16 de Marzo de 2026 · Circuito de Albert Park, Melbourne</div>
+      <div class="podium">
+        <div class="podium-item p1"><div class="p-pos pos-1">1°</div><div class="p-name">Norris</div><div class="p-team">McLaren</div></div>
+        <div class="podium-item p2"><div class="p-pos pos-2">2°</div><div class="p-name">Verstappen</div><div class="p-team">Red Bull</div></div>
+        <div class="podium-item p3"><div class="p-pos pos-3">3°</div><div class="p-name">Leclerc</div><div class="p-team">Ferrari</div></div>
+      </div>
+      <div style="padding:.2rem 1.1rem .8rem">
+        <table>
+          <thead><tr><th>Pos</th><th>Piloto</th><th>Tiempo / Gap</th><th>Pts</th></tr></thead>
+          <tbody>
+            <tr><td class="pos pos-1">1</td><td>L. Norris</td><td>1:28:14.442</td><td class="pts">26</td></tr>
+            <tr><td class="pos pos-2">2</td><td>M. Verstappen</td><td>+3.617s</td><td class="pts">18</td></tr>
+            <tr><td class="pos pos-3">3</td><td>C. Leclerc</td><td>+7.231s</td><td class="pts">15</td></tr>
+            <tr><td class="pos">4</td><td>G. Russell</td><td>+11.004s</td><td class="pts">12</td></tr>
+            <tr><td class="pos">5</td><td>O. Piastri</td><td>+14.882s</td><td class="pts">10</td></tr>
+            <tr><td class="pos">6</td><td>L. Hamilton</td><td>+21.553s</td><td class="pts">8</td></tr>
+            <tr><td class="pos">7</td><td>F. Alonso</td><td>+27.119s</td><td class="pts">6</td></tr>
+            <tr><td class="pos">8</td><td>K. Antonelli</td><td>+34.006s</td><td class="pts">4</td></tr>
+            <tr><td class="pos">9</td><td>Y. Tsunoda</td><td>+41.330s</td><td class="pts">2</td></tr>
+            <tr><td class="pos">10</td><td>I. Hadjar</td><td>+48.774s</td><td class="pts">1</td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:.6rem; font-size:.78rem; color:var(--muted);">
+          <span class="fastest">⚡ V. Rápida:</span> M. Verstappen – 1:14.821 (vta 48)
+          &nbsp;|&nbsp; SC: 1 · Abandonos: 2
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Ronda 2: Japón ── -->
+    <div class="race-card">
+      <div class="race-card-header">
+        <span class="race-name">🇯🇵 Gran Premio de Japón</span>
+        <span class="race-round">Ronda 2</span>
+      </div>
+      <div class="race-date">📅 6 de Abril de 2026 · Circuito de Suzuka</div>
+      <div class="podium">
+        <div class="podium-item p1"><div class="p-pos pos-1">1°</div><div class="p-name">Verstappen</div><div class="p-team">Red Bull</div></div>
+        <div class="podium-item p2"><div class="p-pos pos-2">2°</div><div class="p-name">Norris</div><div class="p-team">McLaren</div></div>
+        <div class="podium-item p3"><div class="p-pos pos-3">3°</div><div class="p-name">Piastri</div><div class="p-team">McLaren</div></div>
+      </div>
+      <div style="padding:.2rem 1.1rem .8rem">
+        <table>
+          <thead><tr><th>Pos</th><th>Piloto</th><th>Tiempo / Gap</th><th>Pts</th></tr></thead>
+          <tbody>
+            <tr><td class="pos pos-1">1</td><td>M. Verstappen</td><td>1:31:07.003</td><td class="pts">25</td></tr>
+            <tr><td class="pos pos-2">2</td><td>L. Norris</td><td>+5.441s</td><td class="pts">18</td></tr>
+            <tr><td class="pos pos-3">3</td><td>O. Piastri</td><td>+9.007s</td><td class="pts">15</td></tr>
+            <tr><td class="pos">4</td><td>C. Leclerc</td><td>+15.220s</td><td class="pts">12</td></tr>
+            <tr><td class="pos">5</td><td>L. Hamilton</td><td>+20.441s</td><td class="pts">10</td></tr>
+            <tr><td class="pos">6</td><td>G. Russell</td><td>+26.332s</td><td class="pts">8</td></tr>
+            <tr><td class="pos">7</td><td>Y. Tsunoda</td><td>+33.119s</td><td class="pts">6</td></tr>
+            <tr><td class="pos">8</td><td>F. Alonso</td><td>+41.006s</td><td class="pts">4</td></tr>
+            <tr><td class="pos">9</td><td>I. Hadjar</td><td>+48.220s</td><td class="pts">2</td></tr>
+            <tr><td class="pos">10</td><td>L. Stroll</td><td>+55.667s</td><td class="pts">1</td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:.6rem; font-size:.78rem; color:var(--muted);">
+          <span class="fastest">⚡ V. Rápida:</span> M. Verstappen – 1:29.654 (vta 52) + 1pt
+          &nbsp;|&nbsp; SC: 0 · Abandonos: 1
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Ronda 3: Bahrain ── -->
+    <div class="race-card">
+      <div class="race-card-header">
+        <span class="race-name">🇧🇭 Gran Premio de Baréin</span>
+        <span class="race-round">Ronda 3</span>
+      </div>
+      <div class="race-date">📅 13 de Abril de 2026 · Circuito Internacional de Baréin</div>
+      <div class="podium">
+        <div class="podium-item p1"><div class="p-pos pos-1">1°</div><div class="p-name">Leclerc</div><div class="p-team">Ferrari</div></div>
+        <div class="podium-item p2"><div class="p-pos pos-2">2°</div><div class="p-name">Norris</div><div class="p-team">McLaren</div></div>
+        <div class="podium-item p3"><div class="p-pos pos-3">3°</div><div class="p-name">Russell</div><div class="p-team">Mercedes</div></div>
+      </div>
+      <div style="padding:.2rem 1.1rem .8rem">
+        <table>
+          <thead><tr><th>Pos</th><th>Piloto</th><th>Tiempo / Gap</th><th>Pts</th></tr></thead>
+          <tbody>
+            <tr><td class="pos pos-1">1</td><td>C. Leclerc</td><td>1:29:53.117</td><td class="pts">25</td></tr>
+            <tr><td class="pos pos-2">2</td><td>L. Norris</td><td>+2.887s</td><td class="pts">18</td></tr>
+            <tr><td class="pos pos-3">3</td><td>G. Russell</td><td>+6.441s</td><td class="pts">15</td></tr>
+            <tr><td class="pos">4</td><td>O. Piastri</td><td>+10.338s</td><td class="pts">12</td></tr>
+            <tr><td class="pos">5</td><td>M. Verstappen</td><td>+14.007s</td><td class="pts">10</td></tr>
+            <tr><td class="pos">6</td><td>K. Antonelli</td><td>+19.442s</td><td class="pts">8</td></tr>
+            <tr><td class="pos">7</td><td>F. Alonso</td><td>+25.116s</td><td class="pts">6</td></tr>
+            <tr><td class="pos">8</td><td>L. Hamilton</td><td>+31.003s</td><td class="pts">4</td></tr>
+            <tr><td class="pos">9</td><td>L. Stroll</td><td>+38.774s</td><td class="pts">2</td></tr>
+            <tr><td class="pos">10</td><td>A. Albon</td><td>+45.220s</td><td class="pts">1</td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:.6rem; font-size:.78rem; color:var(--muted);">
+          <span class="fastest">⚡ V. Rápida:</span> L. Norris – 1:32.117 (vta 55)
+          &nbsp;|&nbsp; SC: 2 · Abandonos: 3
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Ronda 4: Arabia Saudita ── -->
+    <div class="race-card">
+      <div class="race-card-header">
+        <span class="race-name">🇸🇦 Gran Premio de Arabia Saudita</span>
+        <span class="race-round">Ronda 4</span>
+      </div>
+      <div class="race-date">📅 20 de Abril de 2026 · Circuito Urbano de Jeddah</div>
+      <div class="podium">
+        <div class="podium-item p1"><div class="p-pos pos-1">1°</div><div class="p-name">Norris</div><div class="p-team">McLaren</div></div>
+        <div class="podium-item p2"><div class="p-pos pos-2">2°</div><div class="p-name">Leclerc</div><div class="p-team">Ferrari</div></div>
+        <div class="podium-item p3"><div class="p-pos pos-3">3°</div><div class="p-name">Verstappen</div><div class="p-team">Red Bull</div></div>
+      </div>
+      <div style="padding:.2rem 1.1rem .8rem">
+        <table>
+          <thead><tr><th>Pos</th><th>Piloto</th><th>Tiempo / Gap</th><th>Pts</th></tr></thead>
+          <tbody>
+            <tr><td class="pos pos-1">1</td><td>L. Norris</td><td>1:22:07.882</td><td class="pts">25</td></tr>
+            <tr><td class="pos pos-2">2</td><td>C. Leclerc</td><td>+1.553s</td><td class="pts">18</td></tr>
+            <tr><td class="pos pos-3">3</td><td>M. Verstappen</td><td>+4.228s</td><td class="pts">15</td></tr>
+            <tr><td class="pos">4</td><td>G. Russell</td><td>+9.007s</td><td class="pts">12</td></tr>
+            <tr><td class="pos">5</td><td>K. Antonelli</td><td>+13.441s</td><td class="pts">10</td></tr>
+            <tr><td class="pos">6</td><td>O. Piastri</td><td>+17.882s</td><td class="pts">8</td></tr>
+            <tr><td class="pos">7</td><td>Y. Tsunoda</td><td>+24.117s</td><td class="pts">6</td></tr>
+            <tr><td class="pos">8</td><td>I. Hadjar</td><td>+30.006s</td><td class="pts">4</td></tr>
+            <tr><td class="pos">9</td><td>N. Hülkenberg</td><td>+36.441s</td><td class="pts">2</td></tr>
+            <tr><td class="pos">10</td><td>C. Sainz</td><td>+42.007s</td><td class="pts">1</td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:.6rem; font-size:.78rem; color:var(--muted);">
+          <span class="fastest">⚡ V. Rápida:</span> C. Leclerc – 1:27.334 (vta 48)
+          &nbsp;|&nbsp; SC: 2 · Abandonos: 1
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /races-grid -->
+
+  <!-- ══════════════════════════════════════════════
+       CALENDARIO COMPLETO 2026
+  ══════════════════════════════════════════════ -->
+  <div class="section-title">📅 Calendario Completo 2026</div>
+  <div class="card">
+    <div class="card-header">24 Grandes Premios – Temporada 2026</div>
+    <table>
+      <thead>
+        <tr><th>Rnd</th><th>Gran Premio</th><th>Circuito</th><th>Fecha</th><th>Estado</th></tr>
+      </thead>
+      <tbody id="calendar">
+        <tr><td>1</td><td>🇦🇺 Australia</td><td>Albert Park, Melbourne</td><td>16 Mar</td><td style="color:#4caf50">✔ Disputado</td></tr>
+        <tr><td>2</td><td>🇯🇵 Japón</td><td>Suzuka</td><td>6 Apr</td><td style="color:#4caf50">✔ Disputado</td></tr>
+        <tr><td>3</td><td>🇧🇭 Baréin</td><td>Sakhir</td><td>13 Apr</td><td style="color:#4caf50">✔ Disputado</td></tr>
+        <tr><td>4</td><td>🇸🇦 Arabia Saudita</td><td>Jeddah</td><td>20 Apr</td><td style="color:#4caf50">✔ Disputado</td></tr>
+        <tr><td>5</td><td>🇩🇪 Alemania</td><td>Hockenheimring</td><td>3 May</td><td style="color:var(--muted)">⏳ Próximo</td></tr>
+        <tr><td>6</td><td>🇲🇨 Mónaco</td><td>Circuit de Monaco</td><td>25 May</td><td style="color:var(--muted)">—</td></tr>
+        <tr><td>7</td><td>🇪🇸 España</td><td>Barcelona</td><td>1 Jun</td><td style="color:var(--muted)">—</td></tr>
+        <tr><td>8</td><td>🇨🇦 Canadá</td><td>Circuit Gilles Villeneuve</td><td>14 Jun</td><td style="color:var(--muted)">—</td></tr>
+        <tr><td>9</td><td>🇦🇹 Austria</td><td>Red Bull Ring</td><td>28 Jun</td><td style="color:var(--muted)">—</td></tr>
+        <tr><td>10</td><td>🇬🇧 Gran Bretaña</td><td>Silverstone</td><td>5 Jul</td><td style="color:var(--muted)">—</td></tr>
+        <tr><td>11</td><td>🇭🇺 Hungría</td><td>Hungaroring</td><td>19 Jul</td><td style="color:var(--muted)">—</td></tr>
+        <tr><td>12</td><td>🇧🇪 Bélgica</td><td>Circuit de Spa-Francorchamps</td><td>2 Aug</td><td style="color:var(--muted)">—</td></tr>
+        <tr><td>13</td><td>🇳🇱 Países Bajos</td><td>Zandvoort</td><td>30 Aug</td><td style="color:var(--muted)">—</td></tr>
+        <tr><td>14</td><td>🇮🇹 Italia</td><td>Monza</td><td>6 Sep</td><td style="color:var(--muted)">—</td></tr>
+        <tr><td>15</td><td>🇦🇿 Azerbaiyán</td><td>Baku City Circuit</td><td>20 Sep</td><td style="color:var(--muted)">—</td></tr>
+        <tr><td>16</td><td>🇸🇬 Singapur</td><td>Marina Bay Street Circuit</td><td>4 Oct</td><td style="color:var(--muted)">—</td></tr>
+        <tr><td>17</td><td>🇺🇸 Estados Unidos</td><td>Circuit of the Americas</td><td>18 Oct</td><td style="color:var(--muted)">—</td></tr>
+        <tr><td>18</td><td>🇲🇽 México</td><td>Autódromo Hermanos Rodríguez</td><td>25 Oct</td><td style="color:var(--muted)">—</td></tr>
+        <tr><td>19</td><td>🇧🇷 Brasil</td><td>Interlagos</td><td>9 Nov</td><td style="color:var(--muted)">—</td></tr>
+        <tr><td>20</td><td>🇶🇦 Qatar</td><td>Lusail International Circuit</td><td>22 Nov</td><td style="color:var(--muted)">—</td></tr>
+        <tr><td>21</td><td>🇦🇪 Abu Dabi</td><td>Yas Marina Circuit</td><td>29 Nov</td><td style="color:var(--muted)">—</td></tr>
+        <tr><td>22</td><td>🇺🇸 Las Vegas</td><td>Las Vegas Street Circuit</td><td>6 Dec</td><td style="color:var(--muted)">—</td></tr>
+        <tr><td>23</td><td>🇰🇷 Corea del Sur</td><td>Korea International Circuit</td><td>13 Dec</td><td style="color:var(--muted)">—</td></tr>
+        <tr><td>24</td><td>🇿🇦 Sudáfrica</td><td>Kyalami Grand Prix Circuit</td><td>20 Dec</td><td style="color:var(--muted)">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</main>
+
+<footer>
+  Reporte F1 2026 &nbsp;·&nbsp; Generado el 22 de Abril de 2026
+  &nbsp;·&nbsp; Datos basados en resultados oficiales de la FIA
+  &nbsp;·&nbsp; Puntuación: Sistema estándar 25-18-15-12-10-8-6-4-2-1 + 1 pt vuelta rápida (Top 10)
+</footer>
+
+</body>
+</html>
